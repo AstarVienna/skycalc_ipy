@@ -1,0 +1,8 @@
+numpy
+astropy
+synphot
+wget
+requests
+matplotlib
+numpydoc
+sphinxcontrib-apidoc

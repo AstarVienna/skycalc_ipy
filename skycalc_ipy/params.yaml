@@ -1,0 +1,244 @@
+airmass :
+  - 1.
+  - float
+  - range
+  - [1.0, 3.0]
+  - "airmass in range [1.0, 3.0]"
+
+pwv_mode :
+  - "pwv"
+  - str
+  - choice
+  - ['pwv','season']
+  - "Season or Period of Night ['pwv','season']"
+
+season :
+  - 0
+  - int
+  - range
+  - [0, 6]
+  - "0=all year, 1=dec/jan,2=feb/mar..."
+
+time :
+  - 0
+  - int
+  - range
+  - [0, 3]
+  - "0=all year, 1,2,3 = third of night"
+
+pwv :
+  - 3.5
+  - float
+  - nearest
+  - [-1.0, 0.5, 1.0, 1.5, 2.5, 3.5, 5.0, 7.5, 10.0, 20.0]
+  - "Precipitable Water Vapor in range [-1.0, 20.0] mm"
+
+msolflux :
+  - 130.
+  - float
+  - greater_than
+  - 0
+  - "Monthly Averaged Solar Flux > 0.0"
+
+incl_moon :
+  - Y
+  - str
+  - flag
+  - ["Y", "N"]
+  - "Y/N flag for inclusion of scattered moonlight"
+
+moon_sun_sep :
+  - 90.
+  - float
+  - range
+  - [0., 360.]
+  - "[0.0, 360.0] Separation of Sun and Moon as seen from Earth (moon phase)"
+
+moon_target_sep :
+  - 45.
+  - float
+  - range
+  - [0., 180.]
+  - "[0.0, 180.0] Moon-Target Separation"
+
+moon_alt :
+  - 45.
+  - float
+  - range
+  - [-90., 90.]
+  - "[-90.0, 90.0] Moon Altitude over Horizon"
+
+moon_earth_dist :
+  - 1.
+  - float
+  - range
+  - [0.91, 1.08]
+  - "[0.91., 1.08] Moon-Earth Distance (mean=1)"
+
+incl_starlight :
+  - Y
+  - str
+  - flag
+  - ["Y", "N"]
+  - "Y/N flag for inclusion of scattered starlight"
+
+incl_zodiacal :
+  - Y
+  - str
+  - flag
+  - ["Y", "N"]
+  - "Y/N flag for inclusion of zodiacal light"
+
+ecl_lon :
+  - 135.
+  - float
+  - range
+  - [0., 180.]
+  - "[-180.0,180.0] Heliocentric ecliptic longitude"
+
+ecl_lat :
+  - 90.
+  - float
+  - range
+  - [-90.0,90.0]
+  - "[-90.0,90.0] Ecliptic latitude"
+
+incl_loweratm :
+  - "Y"
+  - str
+  - flag
+  - ["Y", "N"]
+  - "Y/N flag for inclusion of Molecular Emission of Lower Atmosphere"
+
+incl_upperatm :
+  - "Y"
+  - str
+  - flag
+  - ["Y", "N"]
+  - "Y/N flag for inclusion of Emission Lines of Upper Atmosphere"
+
+incl_airglow :
+  - "Y"
+  - str
+  - flag
+  - ["Y", "N"]
+  - "Y/N flag for inclusion of Airglow Continuum (Residual Continuum)"
+
+incl_therm :
+  - "N"
+  - str
+  - flag
+  - ["Y", "N"]
+  - "Y/N flag for inclusion of instrumental thermal radiation"
+
+therm_t1 :
+  - 0.
+  - float
+  - greater_than
+  - 0
+  - "Temperature [K] component 1 of instrumental thermal emission. [> 0]"
+
+therm_e1 :
+  - 0.
+  - float
+  - range
+  - [0.0, 1.0]
+  - "Emissivity [K] component 1 of instrumental thermal emission. [0.0, 1.0]"
+
+therm_t2 :
+  - 0.
+  - float
+  - greater_than
+  - 0
+  - "Temperature [K] component 2 of instrumental thermal emission. [> 0]"
+
+therm_e2 :
+  - 0.
+  - float
+  - range
+  - [0.0, 1.0]
+  - "Emissivity [K] component 2 of instrumental thermal emission. [0.0, 1.0]"
+
+therm_t3 :
+  - 0.
+  - float
+  - greater_than
+  - 0
+  - "Temperature [K] component 3 of instrumental thermal emission. [> 0]"
+
+therm_e3 :
+  - 0.
+  - float
+  - range
+  - [0.0, 1.0]
+  - "Emissivity [K] component 3 of instrumental thermal emission. [0.0, 1.0]"
+
+vacair :
+  - vac
+  - str
+  - choice
+  - ['vac','air']
+  - "Wavelength treatment for in vacuum or in air ['vac','air']"
+
+wmin :
+  - 300.
+  - float
+  - range
+  - [300., 300000.]
+  - "[300., 3e5] nm. Minimum wavelength. Must be lesser than wmin"
+
+wmax :
+  - 2000.
+  - float
+  - range
+  - [300., 300000.]
+  - "[300., 3e5] nm. Maximum wavelength. Must be greater than wmin"
+
+wgrid_mode :
+  - fixed_wavelength_step
+  - str
+  - choice
+  - ['fixed_spectral_resolution','fixed_wavelength_step']
+  - "Wavelength grid mode ['fixed_spectral_resolution','fixed_wavelength_step']"
+
+wdelta :
+  - 0.1
+  - float
+  - range
+  - [0., 300000.]
+  - "[0., 3e5] nm. wavelength sampling step dlam"
+
+wres :
+  - 20000.
+  - float
+  - range
+  - [0., 1000000.]
+  - "[0,1.0e6] RESOLUTION is misleading, it is rather lam/dlam"
+
+lsf_type :
+  - none
+  - str
+  - choice
+  - ['none','Gaussian','Boxcar']
+  - "Line Spread Function type ['none','Gaussian','Boxcar']"
+
+lsf_gauss_fwhm :
+  - 5.
+  - float
+  - greater_than
+  - 0
+  - "Line Spread Function FWHM in bins > 0.0"
+
+lsf_boxcar_fwhm :
+  - 5.
+  - float
+  - greater_than
+  - 0
+  - "Line Spread Function FWHM in bins > 0.0"
+
+observatory :
+  - paranal
+  - str
+  - choice
+  - ['lasilla','paranal','armazones', '3060m', '5000m']
+  - "Observatory name ['lasilla','paranal','armazones', '3060m', '5000m']"
