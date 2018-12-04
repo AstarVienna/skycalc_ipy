@@ -1,11 +1,16 @@
 import os
+import inspect
 import yaml
 import numpy as np
 
 
 class SkyCalcParams:
 
-    def __init__(self, ipt_str="params.yaml"):
+    def __init__(self, ipt_str=None):
+
+        if ipt_str is None:
+            dirname = os.path.dirname(inspect.getfile(inspect.currentframe()))
+            ipt_str = os.path.join(dirname, "params.yaml")
 
         params = load_yaml(ipt_str)
         self.defaults   = {pp : params[pp][0] for pp in params}
