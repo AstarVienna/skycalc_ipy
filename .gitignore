@@ -5,21 +5,9 @@ __pycache__/
 
 # C extensions
 *.so
-not-included/
 *.egg-info/
 .installed.cfg
 *.egg
-
-# Translations
-*.mo
-*.pot
-
-# Django stuff:
-*.log
-local_settings.py
-
-# Scrapy stuff:
-.scrapy
 
 # Sphinx documentation
 docs/_build/
@@ -34,12 +22,6 @@ target/
 # pyenv
 .python-version
 
-# celery beat schedule file
-celerybeat-schedule
-
-# dotenv
-.env
-
 # virtualenv
 .venv/
 venv/
@@ -47,3 +29,6 @@ ENV/
 
 # PyCharm files
 .idea
+
+# Generics
+not-included/
