@@ -13,7 +13,6 @@ import getopt
 import numpy as np
 
 
-
 class AlmanacQuery:
     """AlmanacQuery for Querying the SkyCalc Almanac"""
 
@@ -402,12 +401,6 @@ class SkyModel:
     def help(self):
         return False
         
-
-
-
-
-
-
 
     def __getitem__(self, item):
         return self.params[item]

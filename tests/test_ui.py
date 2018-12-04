@@ -1,5 +1,5 @@
 from pytest import raises
-from telescopy.skycalc_ipy import ui
+from skycalc_ipy import ui
 
 ### Mocks
 skp = ui.SkyCalcParams()
