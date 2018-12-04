@@ -13,6 +13,7 @@ class SkyCalcParams:
             ipt_str = os.path.join(dirname, "params.yaml")
 
         params = load_yaml(ipt_str)
+
         self.defaults   = {pp : params[pp][0] for pp in params}
         self.values     = {pp : params[pp][0] for pp in params}
         self.data_type  = {pp : params[pp][1] for pp in params}
@@ -85,7 +86,7 @@ class SkyCalcParams:
 
 def load_yaml(ipt_str):
 
-    if ipt_str[-4:].lower() == "yaml":
+    if ".yaml" in ipt_str.lower():
         if not os.path.exists(ipt_str):
             raise ValueError(ipt_str + " not found")
 
