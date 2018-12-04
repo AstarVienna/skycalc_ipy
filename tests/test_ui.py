@@ -48,7 +48,10 @@ class TestSkycalcParamsMisc:
 
     def test_print_comments_misspelled_keyword(self, capsys):
         skp.print_comments(["iarmass"])
-        output = capsys.readouterr()[0].strip()
+        sys_out = capsys.readouterr()
+        print(sys_out)
+        output = sys_out[0].strip()
+
         assert output == "iarmass not found"
 
     def test_keys_returns_list_of_keys(self):

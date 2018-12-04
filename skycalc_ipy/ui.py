@@ -31,7 +31,7 @@ class SkyCalcParams:
 
         for pname in param_names:
             if pname not in self.comments.keys():
-                print(pname, "not found")
+                print(pname + " not found")
             else:
                 print(self.comments[pname])
 
