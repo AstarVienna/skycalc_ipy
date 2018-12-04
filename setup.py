@@ -8,7 +8,7 @@ from skycalc_ipy.version import __version__
 with open('README.md') as f:
     readme = f.read()
 
-with open('LICENSE') as f:
+with open('LICENCE') as f:
     license = f.read()
 
 
