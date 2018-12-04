@@ -1,8 +1,12 @@
 import os
 import inspect
+from copy import deepcopy
 import yaml
 import numpy as np
 
+from .core import AlmanacQuery
+
+#__all__ = [SkyCalcParams]
 
 class SkyCalcParams:
 
@@ -41,7 +45,10 @@ class SkyCalcParams:
         invalid_keys = []
         for key in self.values:
 
-            if self.check_type[key] in ["range", "nearest"]:
+            if self.check_type[key] == "no_check" or self.defaults[key] is None:
+                continue
+
+            elif self.check_type[key] in ["range", "nearest"]:
                 if self.values[key] < self.allowed[key][0] or \
                    self.values[key] > self.allowed[key][-1]:
                     valid = False
@@ -62,6 +69,9 @@ class SkyCalcParams:
                     valid = False
                     invalid_keys += [key]
 
+            else:
+                pass
+
         if not valid:
             print("See <SkyCalcParams>.comments[<key>] for help")
             print("The following entries are invalid:")
@@ -71,9 +81,18 @@ class SkyCalcParams:
 
         return valid
 
-    @property
-    def keys(self):
-        return list(self.defaults.keys())
+    def get_almanac_data(self, ra, dec, date=None, mjd=None,
+                            update_values=False):
+
+        response = get_almanac_data(ra, dec, date, mjd, update_values)
+        if update_values:
+            self.values.update(response)
+
+        return response
+
+
+    def update(self, kwargs):
+        self.values.update(kwargs)
 
     def __setitem__(self, key, value):
         if key not in self.keys:
@@ -82,6 +101,10 @@ class SkyCalcParams:
 
     def __getitem__(self, item):
         return self.values[item]
+
+    @property
+    def keys(self):
+        return list(self.defaults.keys())
 
 
 def load_yaml(ipt_str):
@@ -97,3 +120,18 @@ def load_yaml(ipt_str):
         opts_dict = yaml.load(ipt_str)
 
     return opts_dict
+
+
+def get_almanac_data(ra, dec, date=None, mjd=None, return_full_dict=False):
+
+    skycalc_params = SkyCalcParams()
+    skycalc_params.values.update({"ra": ra, "dec": dec,
+                                  "date": date, "mjd": mjd})
+    alm = AlmanacQuery(skycalc_params.values)
+    response = alm.query()
+
+    if return_full_dict:
+        skycalc_params.values.update(response)
+        return skycalc_params.values
+    else:
+        return response

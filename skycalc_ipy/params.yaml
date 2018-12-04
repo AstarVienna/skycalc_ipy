@@ -242,3 +242,34 @@ observatory :
   - choice
   - ['lasilla','paranal','armazones', '3060m', '5000m']
   - "Observatory name ['lasilla','paranal','armazones', '3060m', '5000m']"
+
+
+### Almanac Parameters
+
+ra :
+  -
+  - float
+  - range
+  - [0., 360.]
+  - "[0., 360.] Right ascension [deg]"
+
+dec :
+  -
+  - float
+  - range
+  - [-90., 90.]
+  - "[-90., 90.] Declination [deg]"
+
+date :
+  -
+  - str
+  - no_check
+  - []
+  - "Sting timestamp: YYYY-MM-DDThh:mm:ss"
+
+mjd :
+  -
+  - float
+  - no_check
+  - []
+  - "Float: Modified julian date"

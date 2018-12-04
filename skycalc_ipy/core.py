@@ -11,12 +11,16 @@ import pkg_resources
 import getopt
 
 import numpy as np
+from .ui import SkyCalcParams
 
 
 class AlmanacQuery:
     """AlmanacQuery for Querying the SkyCalc Almanac"""
 
     def __init__(self, indic):
+
+        if isinstance(indic, SkyCalcParams):
+            indic = indic.values
 
         self.almdata = None
         self.almserver = 'http://etimecalret-001.eso.org'
@@ -48,15 +52,16 @@ class AlmanacQuery:
         # coord_ut_min  : int
         # coord_ut_sec  : float
 
-        if 'date' in indic:
-            self.almindic['input_type'] = 'ut_time'
-            isotime = None
-            try:
+
+        if 'date' in indic and indic["date"] is not None:
+
+            if isinstance(indic['date'], str):
                 isotime = datetime.strptime(indic['date'],
                                             '%Y-%m-%dT%H:%M:%S')
-            except ValueError:
-                print('Error: wrong date format for the Almanac.')
-                raise
+            else:
+                isotime = indic['date']
+
+            self.almindic['input_type'] = 'ut_time'
             self.almindic['coord_year'] = isotime.year
             self.almindic['coord_month'] = isotime.month
             self.almindic['coord_day'] = isotime.day
@@ -64,25 +69,15 @@ class AlmanacQuery:
             self.almindic['coord_ut_min'] = isotime.minute
             self.almindic['coord_ut_sec'] = isotime.second
 
-        elif 'mjd' in indic:
+        elif 'mjd' in indic and indic["mjd"] is not None:
             self.almindic['input_type'] = 'mjd'
-            mjd = None
-            try:
-                mjd = float(indic['mjd'])
-            except ValueError:
-                print('Error: wrong mjd format for the Almanac.')
-                raise
-            self.almindic['mjd'] = mjd
+            self.almindic['mjd'] = float(indic["mjd"])
 
         else:
-            raise ValueError('Error: no date or mjd given for the Almanac')
+            raise ValueError('No valid date or mjd given for the Almanac')
 
-        if 'ra' not in indic:
-            raise ValueError('Error: ra coordinate not given for the Almanac.')
-
-        if 'dec' not in indic:
-            raise ValueError('Error: dec coordinate '
-                             'not given for the Almanac.')
+        if 'ra' not in indic or 'dec' not in indic:
+            raise ValueError('ra/dec coordinate not given for the Almanac.')
 
         ra = None
         try:
@@ -142,7 +137,6 @@ class AlmanacQuery:
                       '" not found in the Almanac response.')
 
         return almdata
-
 
 class bcolors:
     HEADER = '\033[95m'
@@ -279,123 +273,6 @@ class SkyModel:
             else:
                 raise ValueError('Wrong Observatory name, please refer to the '
                                  'documentation.')
-
-
-    def validate_params(self):
-        p = self.params
-
-        self.fixObservatory()
-
-        msgs = []
-        if p["airmass"] < 1.0 or p["airmass"] > 3.0:
-            msgs += ["airmass must be in the range [1.0, 3.0]"]
-
-        if p["pwv_mode"] not in ['pwv','season']:
-            msgs += ["pwv_mode must be in ['pwv','season']"]
-
-        if type(p["season"]) is not int and \
-                (p["season"] > 6 or p["season"] < 0):
-            msgs += ["season must be an integer in the range [0, 6]."]
-
-        if type(p["time"]) is not int and \
-                (p["time"] > 3 or p["season"] < 0):
-            msgs += ["time must be an integer in the range [0, 3]."]
-
-        if p["pwv"] < -1 or p["pwv"] > 20.:
-            msgs += ["pwv must be in the range [-1.0, 20.0]."]
-        else:
-            pwv_grid = np.array([-1., 0.5, 1., 1.5, 2.5, 3.5, 5., 7.5, 10., 20.])
-            ii = np.argmin(np.abs(pwv_grid - p["pwv"]))
-            p["pwv"] = pwv_grid[ii]
-
-        if p["msolflux"] < 0.:
-            msgs += ["msolflux must be greater than 0"]
-
-        if p["incl_moon"] not in ["Y", "N"]:
-            msgs += ["incl_moon must be 'Y' or 'N'"]
-
-        if p["moon_sun_sep"] < 0. or p["moon_sun_sep"] > 360.:
-            msgs += ["moon_sun_sep must be in the range [0, 360]"]
-
-        if p["moon_target_sep"] < 0. or p["moon_target_sep"] > 180.:
-            msgs += ["moon_target_sep must be in the range [0, 180]"]
-
-        if p["moon_alt"] < 90. or p["moon_alt"] > 90.:
-            msgs += ["moon_alt must be in the range [-90, 90]"]
-
-        if p["moon_earth_dist"] < 0.91 or p["moon_earth_dist"] > 1.08:
-            msgs += ["moon_earth_dist must be in the range [0.91, 1.08]"]
-
-        if p["incl_starlight"] not in ["Y", "N"]:
-            msgs += ["incl_starlight must be 'Y' or 'N'"]
-
-        if p["incl_zodiacal"] not in ["Y", "N"]:
-            msgs += ["incl_zodiacal must be 'Y' or 'N'"]
-
-        if p["ecl_lon"] < -180. or p["ecl_lon"] > 180.:
-            msgs += ["ecl_lon must be in the range [-180, 180]"]
-
-        if p["ecl_lat"] < -90. or p["ecl_lat"] > 90.:
-            msgs += ["ecl_lat must be in the range [-90, 90]"]
-
-        if p["incl_loweratm"] not in ["Y", "N"]:
-            msgs += ["incl_loweratm must be 'Y' or 'N'"]
-
-        if p["incl_upperatm"] not in ["Y", "N"]:
-            msgs += ["incl_upperatm must be 'Y' or 'N'"]
-
-        if p["incl_airglow"] not in ["Y", "N"]:
-            msgs += ["incl_airglow must be 'Y' or 'N'"]
-
-        if p["incl_therm"] not in ["Y", "N"]:
-            msgs += ["incl_therm must be 'Y' or 'N'"]
-
-        for param in ["therm_t1", "therm_t2", "therm_t3"]:
-            if p[param] < 0:
-                msgs += [param + " must be >= 0"]
-
-        for param in ["therm_e1", "therm_e2", "therm_e3"]:
-            if p[param] < 0 or p[param] > 1:
-                msgs += [param + " must be in the range [0, 1]"]
-
-        if p["vacair"] not in ["vac", "air"]:
-            msgs += ["vacair must be 'vac' or 'air'"]
-
-        if p["wmin"] < 300. or p["wmin"] > 30000.:
-            msgs += ["wmin must be in the range [-300, 30000]"]
-
-        if p["wmax"] < -300. or p["wmax"] > 30000.:
-            msgs += ["wmax must be in the range [-300, 30000]"]
-
-        if p["wmax"] < p["wmin"]:
-            msgs += ["wmax must be greater than wmin"]
-
-        if p["wgrid_mode"] not in ['fixed_spectral_resolution',
-                                   'fixed_wavelength_step']:
-            msgs += ["wgrid_mode must be 'fixed_spectral_resolution' or "
-                                        "'fixed_wavelength_step'"]
-
-        if p["wdelta"] < 0. or p["wdelta"] > 30000.:
-            msgs += ["wdelta must be in the range [0, 30000]"]
-
-        if p["wres"] < 0. or p["wres"] > 1E6:
-            msgs += ["wres must be in the range [0, 1E6]"]
-
-        if p["lsf_type"] not in ['none','Gaussian','Boxcar']:
-            msgs += ["lsf_type must one of ['none','Gaussian','Boxcar']"]
-
-        if p["lsf_gauss_fwhm"] < 0.:
-            msgs += ["lsf_gauss_fwhm must be greater than 0"]
-
-        if p["lsf_boxcar_fwhm"] < 0.:
-            msgs += ["lsf_boxcar_fwhm must be greater than 0"]
-
-
-
-
-
-        if len(msgs) > 0:
-            msgs += ["Call <SkyModel>.help(<keyword>) for the allowed values"]
 
 
     def help(self):

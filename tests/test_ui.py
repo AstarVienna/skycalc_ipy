@@ -14,7 +14,6 @@ class TestLoadYaml:
                                               "params.yaml"))
         assert yaml_dict["season"][0] == 0
 
-
     def test_throws_exception_for_nonexistent_file(self):
         with raises(ValueError):
             ui.load_yaml("bogus.yaml")
@@ -49,9 +48,7 @@ class TestSkycalcParamsMisc:
     def test_print_comments_misspelled_keyword(self, capsys):
         skp.print_comments(["iarmass"])
         sys_out = capsys.readouterr()
-        print(sys_out)
         output = sys_out[0].strip()
-
         assert output == "iarmass not found"
 
     def test_keys_returns_list_of_keys(self):
@@ -60,7 +57,8 @@ class TestSkycalcParamsMisc:
 
 
 class TestSkycalcParamsValidateMethod(object):
-    def test_returns_True_for_all_good(self):
+
+    def test_returns_true_for_all_good(self):
         assert skp.validate_params() is True
 
     def test_returns_false_for_bung_YN_flag(self):
@@ -78,3 +76,4 @@ class TestSkycalcParamsValidateMethod(object):
     def test_returns_false_for_value_below_zero(self):
         skp["lsf_boxcar_fwhm"] = -5.
         assert skp.validate_params() is False
+
