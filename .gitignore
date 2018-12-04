@@ -4,6 +4,7 @@ __pycache__/
 *$py.class
 .pytest_cache/
 
+
 # C extensions
 *.so
 *.egg-info/
@@ -13,9 +14,6 @@ __pycache__/
 # Sphinx documentation
 docs/_build/
 docs/source/reference
-
-# PyBuilder
-target/
 
 # IPython Notebook
 .ipynb_checkpoints
@@ -33,3 +31,4 @@ ENV/
 
 # Generics
 not-included/
+dist/

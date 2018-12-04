@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
-
 # Learn more: https://github.com/kennethreitz/setup.py
 
 from setuptools import setup, find_packages
-from skycalc_ipy.version import __version__
 
 with open('README.md') as f:
     readme = f.read()
@@ -11,6 +9,7 @@ with open('README.md') as f:
 with open('LICENCE') as f:
     license = f.read()
 
+__version__ = "0.1dev"
 
 setup(
     name='skycalc_ipy',
@@ -21,7 +20,6 @@ setup(
     author_email='kieran.leschinski@univie.ac.at',
     url='https://github.com/astronomyk/skycalc_ipy',
     license=license,
-    packages=find_packages(exclude=('tests', 'docs'))
-    # packages=find_packages()
-)
-
+    include_package_data=True,
+    packages=find_packages(exclude=('tests', 'docs')),
+    )
