@@ -7,9 +7,6 @@ skp = ui.SkyCalcParams()
 
 
 class TestLoadYaml:
-    def test_finds_default_file(self):
-        yaml_dict = ui.load_yaml()
-        assert yaml_dict["season"][0] == 0
 
     def test_finds_file_for_specified_path(self):
         dirname = os.path.dirname(inspect.getfile(inspect.currentframe()))
