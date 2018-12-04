@@ -400,7 +400,8 @@ class SkyModel:
 
 
     def help(self):
-
+        return False
+        
 
 
 
