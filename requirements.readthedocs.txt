@@ -4,8 +4,6 @@ synphot
 wget
 requests
 matplotlib
-yaml
-
+pyyaml
 numpydoc
-
 sphinxcontrib-apidoc

@@ -4,4 +4,4 @@ synphot
 wget
 requests
 matplotlib
-yaml
+pyyaml
