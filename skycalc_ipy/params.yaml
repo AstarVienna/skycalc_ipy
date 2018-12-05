@@ -202,7 +202,7 @@ wgrid_mode :
   - "Wavelength grid mode ['fixed_spectral_resolution','fixed_wavelength_step']"
 
 wdelta :
-  - 0.1
+  - 1
   - float
   - range
   - [0., 300000.]

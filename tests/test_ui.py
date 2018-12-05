@@ -7,9 +7,9 @@ from astropy.io import fits
 import synphot as sp
 
 # Mocks
-skp  = ui.SkyCalcParams()
-skp2 = ui.SkyCalcParams()
-skp_small = ui.SkyCalcParams()
+skp  = ui.SkyCalc()
+skp2 = ui.SkyCalc()
+skp_small = ui.SkyCalc()
 skp_small["wdelta"] = 100
 
 class TestLoadYaml:

@@ -5,7 +5,7 @@ from skycalc_ipy import core
 from datetime import datetime as dt
 
 # Mocks
-skp = ui.SkyCalcParams()
+skp = ui.SkyCalc()
 
 class TestAlmanacInit:
 

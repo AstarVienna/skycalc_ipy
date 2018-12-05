@@ -11,6 +11,8 @@ from astropy.io import fits
 
 from .core import AlmanacQuery, SkyModel
 
+__all__ = ["SkyCalc"]
+
 observatory_dict = {"lasilla"   : "2400",
                     "paranal"   : "2640",
                     "3060m"     : "3060",
@@ -19,7 +21,7 @@ observatory_dict = {"lasilla"   : "2400",
                     "highanddry": "5000"}
 
 
-class SkyCalcParams:
+class SkyCalc:
 
     def __init__(self, ipt_str=None):
 
@@ -48,7 +50,7 @@ class SkyCalcParams:
             if pname not in self.comments.keys():
                 print(pname + " not found")
             else:
-                print(self.comments[pname])
+                print("{} : {}".format(pname, self.comments[pname]))
 
     def validate_params(self):
 
@@ -84,7 +86,7 @@ class SkyCalcParams:
                 pass
 
         if not valid:
-            print("See <SkyCalcParams>.comments[<key>] for help")
+            print("See <SkyCalc>.comments[<key>] for help")
             print("The following entries are invalid:")
             for key in invalid_keys:
                 print("'{}' : {} :".format(key, self.values[key]),
@@ -219,7 +221,7 @@ def get_almanac_data(ra, dec, date=None, mjd=None, return_full_dict=False,
     if date is not None and mjd is not None:
         print("Warning: Both date and mjd are set. Using date")
 
-    skycalc_params = SkyCalcParams()
+    skycalc_params = SkyCalc()
     skycalc_params.values.update({"ra": ra, "dec": dec,
                                   "date": date, "mjd": mjd})
     if observatory is not None:
@@ -237,7 +239,7 @@ def get_almanac_data(ra, dec, date=None, mjd=None, return_full_dict=False,
 
 def fix_observatory(in_dict):
 
-    if isinstance(in_dict, SkyCalcParams):
+    if isinstance(in_dict, SkyCalc):
         in_dict = in_dict.values
 
     if "observatory" in in_dict and in_dict["observatory"] in observatory_dict:

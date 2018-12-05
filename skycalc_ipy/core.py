@@ -365,8 +365,9 @@ class SkyModel:
         for key, val in newparams.items():
             if key in self.params:  # valid
                 self.params[key] = val
-            else:  # invalid
-                print('callwith() ignoring invalid keyword: ', key)
+            else:
+                pass
+                # print('callwith() ignoring invalid keyword: ', key)
         self.call()
 
     def printparams(self, keys=None):
