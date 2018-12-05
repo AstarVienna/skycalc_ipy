@@ -159,7 +159,7 @@ class SkyModel:
         self.params = {
             # Airmass. Alt and airmass are coupled through the plane parallel
             # approximation airmass=sec(z), z being the zenith distance
-            # z=90−Alt
+            # z=90-Alt
             'airmass': 1.0,    # float range [1.0,3.0]
 
             # Season and Period of Night

@@ -4,7 +4,8 @@ from pytest import raises
 from skycalc_ipy import ui
 
 # Mocks
-skp = ui.SkyCalcParams()
+skp  = ui.SkyCalcParams()
+skp2 = ui.SkyCalcParams()
 
 
 class TestLoadYaml:
@@ -109,10 +110,23 @@ class TestSkyCalcParamsGetSkySpectrum:
 class TestSkyCalcParamsGetAlmanacData:
 
     def test_return_updated_SkyCalcParams_values_dict_when_flag_true(self):
-        pass
+        out_dict = skp.get_almanac_data(ra=180, dec=0, mjd=50000,
+                                        observatory="lasilla",
+                                        update_values=True)
+        assert out_dict["observatory"] == "lasilla"
+        assert skp["observatory"] == "lasilla"
 
     def test_return_only_almanac_data_when_update_flag_false(self):
-        pass
+        skp2["observatory"] == "paranal"
+        out_dict = skp.get_almanac_data(ra=180, dec=0, mjd=50000,
+                                        observatory="lasilla",
+                                        update_values=False)
+        assert out_dict["observatory"] == "lasilla"
+        assert skp2["observatory"] == "paranal"
+
+    def raise_error_if_both_date_and_mjd_are_empty(self):
+        with raises(ValueError):
+            skp.get_almanac_data(180, 0)
 
 
 class TestFunctionGetAlmanacData:
@@ -153,6 +167,15 @@ class TestFunctionGetAlmanacData:
                                        return_full_dict=False)
         assert type(out_dict) == dict
         assert len(out_dict) == 9
+
+    def test_take_date_only_if_date_and_mjd_are_valid(self, capsys):
+        out_dict_date = ui.get_almanac_data(ra=180, dec=0,
+                                             date="2000-1-1T0:0:0")
+        out_dict_both = ui.get_almanac_data(ra=180, dec=0, mjd=50000,
+                                             date="2000-1-1T0:0:0")
+        output = capsys.readouterr()[0].strip()
+        assert output == "Warning: Both date and mjd are set. Using date"
+        assert out_dict_both == out_dict_date
 
 
 class TestFunctionFixObservatory:

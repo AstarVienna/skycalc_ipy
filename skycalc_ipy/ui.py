@@ -94,16 +94,18 @@ class SkyCalcParams:
 
 
     def get_almanac_data(self, ra, dec, date=None, mjd=None,
-                         update_values=False):
+                         observatory=None, update_values=False):
 
         if date is None and mjd is None:
             raise ValueError("Either date or mjd must be set")
 
-        response = get_almanac_data(ra, dec, date, mjd, update_values)
+        result = get_almanac_data(ra=ra, dec=dec, date=date, mjd=mjd,
+                                  observatory=observatory)
+        print(observatory, result["observatory"], self.values["observatory"])
         if update_values:
-            self.values.update(response)
+            self.values.update(result)
 
-        return response
+        return result
 
 
     def get_sky_spectrum(self, return_type="table", filename=None):
@@ -216,6 +218,9 @@ def load_yaml(ipt_str):
 
 def get_almanac_data(ra, dec, date=None, mjd=None, return_full_dict=False,
                      observatory=None):
+
+    if date is not None and mjd is not None:
+        print("Warning: Both date and mjd are set. Using date")
 
     skycalc_params = SkyCalcParams()
     skycalc_params.values.update({"ra": ra, "dec": dec,
