@@ -143,43 +143,40 @@ class SkyCalcParams:
         params = {k: (self.values[k], self.comments[k]) for k in self.keys}
         meta_data.update(params)
 
-        if return_type == "table":
+        if "tab" in return_type:
             tbl.meta.update(meta_data)
             return tbl
 
-        elif return_type == "arrays":
+        elif "arr" in return_type:
 
-            wave = hdu[1].data["lam"] * u.um
-            trans = hdu[1].data["trans"]
-            flux = hdu[1].data["flux"] * u.Unit("ph s-1 m-2 um-1 arcsec-2")
+            wave  = tbl["lam"].data * tbl["lam"].unit
+            trans = tbl["trans"].data
+            flux  = tbl["flux"].data * tbl["flux"].unit
 
             return wave, trans, flux
 
-        elif return_type == "synphot":
+        elif "syn" in return_type:
             import synphot as sp
 
             trans = sp.SpectralElement(sp.Empirical1D,
-                                      points=hdu[1].data["lam"],
-                                      lookup_table=hdu[1].data["trans"])
+                                      points=tbl["lam"].data*tbl["lam"].unit,
+                                      lookup_table=tbl["trans"].data)
 
             funit = u.Unit("ph s-1 m-2 um-1")
             flux = sp.SourceSpectrum(sp.Empirical1D,
-                                     points=hdu[1].data["lam"],
-                                     lookup_table=hdu[1].data["flux"] * funit)
+                                     points=tbl["lam"].data * tbl["lam"].unit,
+                                     lookup_table=tbl["flux"].data*funit)
             print("Warning: synphot doesn't accept surface brightnesses \n"
                   "The resulting spectrum should be multiplied by arcsec-2")
 
             return trans, flux
 
-        elif return_type == "fits":
+        elif "fit" in return_type:
 
             hdu0 = fits.PrimaryHDU()
             for key in meta_data:
                 hdu0.header[key] = meta_data[key]
             hdu1 = fits.table_to_hdu(tbl)
-
-            print(tbl.meta)
-
             hdu = fits.HDUList([hdu0, hdu1])
 
             return hdu

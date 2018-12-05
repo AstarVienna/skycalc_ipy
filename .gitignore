@@ -32,3 +32,4 @@ ENV/
 # Generics
 not-included/
 dist/
+*.fits

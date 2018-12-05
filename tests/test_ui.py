@@ -2,11 +2,15 @@ import os
 import inspect
 from pytest import raises
 from skycalc_ipy import ui
+from astropy import table
+from astropy.io import fits
+import synphot as sp
 
 # Mocks
 skp  = ui.SkyCalcParams()
 skp2 = ui.SkyCalcParams()
-
+skp_small = ui.SkyCalcParams()
+skp_small["wdelta"] = 100
 
 class TestLoadYaml:
 
@@ -83,25 +87,40 @@ class TestSkycalcParamsValidateMethod(object):
 class TestSkyCalcParamsGetSkySpectrum:
 
     def test_returns_data_with_valid_parameters(self):
-        pass
+        tbl = skp_small.get_sky_spectrum()
+        assert "lam" in tbl.colnames
+        assert "flux" in tbl.colnames
+        assert "trans" in tbl.colnames
+        assert len(tbl) == 18
 
     def test_throws_exception_for_invalid_parameters(self):
-        pass
+        skp["airmass"] = 9001
+        with raises(ValueError):
+            skp.get_sky_spectrum()
 
     def test_returns_table_for_return_type_table(self):
-        pass
+        tbl = skp_small.get_sky_spectrum(return_type="table")
+        assert isinstance(tbl, table.Table)
 
     def test_returns_fits_for_return_type_fits(self):
-        pass
+        hdu = skp_small.get_sky_spectrum(return_type="fits")
+        assert isinstance(hdu, fits.HDUList)
 
     def test_returned_fits_has_proper_meta_data(self):
-        pass
+        hdu = skp_small.get_sky_spectrum(return_type="fits")
+        assert "DATE_CRE" in hdu[0].header
+        assert "SOURCE" in hdu[0].header
+        assert "AIRMASS" in hdu[0].header
+        assert hdu[0].header["ETYPE"] == "TERCurve"
 
     def test_returns_three_arrays_for_return_type_array(self):
-        pass
+        arrs = skp_small.get_sky_spectrum(return_type="array")
+        assert len(arrs) == 3
 
     def test_returns_two_synphot_objects_for_return_type_synphot(self):
-        pass
+        trans, flux = skp_small.get_sky_spectrum(return_type="synphot")
+        assert isinstance(trans, sp.SpectralElement)
+        assert isinstance(flux,  sp.SourceSpectrum)
 
     def test_returns_nothing_if_return_type_is_invalid(self):
         pass
