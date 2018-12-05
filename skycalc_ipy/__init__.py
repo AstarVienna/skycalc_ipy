@@ -1,2 +1,2 @@
-from .ui import *
+from . import ui
 from . import core

@@ -2,6 +2,7 @@ import os
 import inspect
 from pytest import raises
 from skycalc_ipy import ui
+
 # Mocks
 skp = ui.SkyCalcParams()
 
@@ -28,7 +29,7 @@ class TestLoadYaml:
         assert yaml_dict["params"] == ["hello", "world"]
 
 
-class TestSkycalcParamsMisc:
+class TestSkycalcParamsInit:
     def test_loads_default_when_no_file_given(self):
         assert type(skp.defaults) == dict
         assert skp.defaults["observatory"] == "paranal"
@@ -77,3 +78,101 @@ class TestSkycalcParamsValidateMethod(object):
         skp["lsf_boxcar_fwhm"] = -5.
         assert skp.validate_params() is False
 
+
+class TestSkyCalcParamsGetSkySpectrum:
+
+    def test_returns_data_with_valid_parameters(self):
+        pass
+
+    def test_throws_exception_for_invalid_parameters(self):
+        pass
+
+    def test_returns_table_for_return_type_table(self):
+        pass
+
+    def test_returns_fits_for_return_type_fits(self):
+        pass
+
+    def test_returned_fits_has_proper_meta_data(self):
+        pass
+
+    def test_returns_three_arrays_for_return_type_array(self):
+        pass
+
+    def test_returns_two_synphot_objects_for_return_type_synphot(self):
+        pass
+
+    def test_returns_nothing_if_return_type_is_invalid(self):
+        pass
+
+
+class TestSkyCalcParamsGetAlmanacData:
+
+    def test_return_updated_SkyCalcParams_values_dict_when_flag_true(self):
+        pass
+
+    def test_return_only_almanac_data_when_update_flag_false(self):
+        pass
+
+
+class TestFunctionGetAlmanacData:
+
+    def test_throws_exception_for_invalid_ra(self):
+        with raises(ValueError):
+            ui.get_almanac_data(ra=-10, dec=0, mjd=50000)
+
+    def test_throws_exception_for_invalid_dec(self):
+        with raises(ValueError):
+            ui.get_almanac_data(ra=180, dec=100, mjd=50000)
+
+    def test_throws_exception_for_invalid_mjd(self):
+        with raises(ValueError):
+            ui.get_almanac_data(ra=180, dec=0, mjd="s")
+
+    def test_throws_exception_for_invalid_date(self):
+        with raises(ValueError):
+            ui.get_almanac_data(ra=180, dec=0, date="2000-0-0T0:0:0")
+
+    def test_return_data_for_valid_parameters(self):
+        out_dict = ui.get_almanac_data(ra=180, dec=0, date="2000-1-1T0:0:0",
+                                       observatory="lasilla")
+        assert type(out_dict) == dict
+        assert len(out_dict) == 9
+        assert out_dict["observatory"] == "lasilla"
+
+    def test_return_full_dict_when_flag_true(self):
+        out_dict = ui.get_almanac_data(ra=180, dec=0, date="2000-1-1T0:0:0",
+                                       return_full_dict=True)
+        assert type(out_dict) == dict
+        assert len(out_dict) == 39
+        assert type(out_dict["moon_sun_sep"]) == float
+
+
+    def test_return_only_almanac_dict_when_flag_false(self):
+        out_dict = ui.get_almanac_data(ra=180, dec=0, date="2000-1-1T0:0:0",
+                                       return_full_dict=False)
+        assert type(out_dict) == dict
+        assert len(out_dict) == 9
+
+
+class TestFunctionFixObservatory:
+
+    def test_returns_corrected_dict_for_valid_observatory(self):
+        in_dict = {"observatory": "paranal"}
+        out_dict = ui.fix_observatory(in_dict)
+        assert out_dict["observatory"] == "2640"
+        assert out_dict["observatory_orig"] == "paranal"
+
+    def test_returns_corrected_SkyCalcParams_for_valid_observatory(self):
+        skp["observatory"] = "paranal"
+        out_dict = ui.fix_observatory(skp)
+        assert out_dict["observatory"] == "2640"
+
+    def test_returns_exception_for_in_valid_observatory(self):
+        in_dict = {"observatory" : "deutsch-wagram"}
+        with raises(Exception):
+            ui.fix_observatory(in_dict)
+
+    def test_returns_exception_for_wrong_indict_data_type(self):
+        with raises(Exception):
+            ui.fix_observatory("Bogus")

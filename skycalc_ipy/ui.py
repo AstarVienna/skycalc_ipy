@@ -1,12 +1,23 @@
 import os
 import inspect
 from copy import deepcopy
+from datetime import datetime as dt
+
 import yaml
 import numpy as np
 
-from .core import AlmanacQuery
+from astropy import units as u
+from astropy.io import fits
 
-#__all__ = [SkyCalcParams]
+from .core import AlmanacQuery, SkyModel
+
+observatory_dict = {"lasilla"   : "2400",
+                    "paranal"   : "2640",
+                    "3060m"     : "3060",
+                    "armazones" : "3060",
+                    "5000m"     : "5000",
+                    "highanddry": "5000"}
+
 
 class SkyCalcParams:
 
@@ -81,14 +92,95 @@ class SkyCalcParams:
 
         return valid
 
+
     def get_almanac_data(self, ra, dec, date=None, mjd=None,
-                            update_values=False):
+                         update_values=False):
+
+        if date is None and mjd is None:
+            raise ValueError("Either date or mjd must be set")
 
         response = get_almanac_data(ra, dec, date, mjd, update_values)
         if update_values:
             self.values.update(response)
 
         return response
+
+
+    def get_sky_spectrum(self, return_type="table", filename=None):
+
+        from astropy import table
+
+        if filename is None:
+            filename = "skycalc_temp.fits"
+
+        if not self.validate_params():
+            raise ValueError("Object contains invalid parameters. "
+                             "Not calling ESO")
+
+        skm = SkyModel()
+        skm.callwith(self.values)
+        skm.write(filename)
+
+        with fits.open(filename) as hdu:
+
+            tbl = table.Table(hdu[1].data)
+            tbl["lam"].unit = u.um
+            for colname in tbl.colnames:
+                if "flux" in colname:
+                    tbl[colname].unit = u.Unit("ph s-1 m-2 um-1 arcsec-2")
+
+        date_created = dt.now().strftime('%Y-%m-%dT%H:%M:%S')
+        meta_data = {"DESCRIPT": "Sky transmission and emission curves",
+                     "SOURCE": "ESO Skycalc utility",
+                     "AUTHOR": "ESO Skycalc utility",
+                     "STATUS": "Tested - Generated from ESO Skycalc utility",
+                     "DATE_CRE": date_created,
+                     "ETYPE": "TERCurve",
+                     "EDIM": 1}
+
+        params = {k: (self.values[k], self.comments[k]) for k in self.keys}
+        meta_data.update(params)
+
+        if return_type == "table":
+            tbl.meta.update(meta_data)
+            return tbl
+
+        elif return_type == "arrays":
+
+            wave = hdu[1].data["lam"] * u.um
+            trans = hdu[1].data["trans"]
+            flux = hdu[1].data["flux"] * u.Unit("ph s-1 m-2 um-1 arcsec-2")
+
+            return wave, trans, flux
+
+        elif return_type == "synphot":
+            import synphot as sp
+
+            trans = sp.SpectralElement(sp.Empirical1D,
+                                      points=hdu[1].data["lam"],
+                                      lookup_table=hdu[1].data["trans"])
+
+            funit = u.Unit("ph s-1 m-2 um-1")
+            flux = sp.SourceSpectrum(sp.Empirical1D,
+                                     points=hdu[1].data["lam"],
+                                     lookup_table=hdu[1].data["flux"] * funit)
+            print("Warning: synphot doesn't accept surface brightnesses \n"
+                  "The resulting spectrum should be multiplied by arcsec-2")
+
+            return trans, flux
+
+        elif return_type == "fits":
+
+            hdu0 = fits.PrimaryHDU()
+            for key in meta_data:
+                hdu0.header[key] = meta_data[key]
+            hdu1 = fits.table_to_hdu(tbl)
+
+            print(tbl.meta)
+
+            hdu = fits.HDUList([hdu0, hdu1])
+
+            return hdu
 
 
     def update(self, kwargs):
@@ -122,11 +214,15 @@ def load_yaml(ipt_str):
     return opts_dict
 
 
-def get_almanac_data(ra, dec, date=None, mjd=None, return_full_dict=False):
+def get_almanac_data(ra, dec, date=None, mjd=None, return_full_dict=False,
+                     observatory=None):
 
     skycalc_params = SkyCalcParams()
     skycalc_params.values.update({"ra": ra, "dec": dec,
                                   "date": date, "mjd": mjd})
+    if observatory is not None:
+        skycalc_params.values["observatory"] = observatory
+    skycalc_params.validate_params()
     alm = AlmanacQuery(skycalc_params.values)
     response = alm.query()
 
@@ -135,3 +231,18 @@ def get_almanac_data(ra, dec, date=None, mjd=None, return_full_dict=False):
         return skycalc_params.values
     else:
         return response
+
+
+def fix_observatory(in_dict):
+
+    if isinstance(in_dict, SkyCalcParams):
+        in_dict = in_dict.values
+
+    if "observatory" in in_dict and in_dict["observatory"] in observatory_dict:
+        in_dict["observatory_orig"] = deepcopy(in_dict["observatory"])
+        in_dict["observatory"] = observatory_dict[in_dict["observatory"]]
+    else:
+        raise ValueError("Wrong Observatory name. "
+                         "See `skycalc.ui.observatory_dict`")
+
+    return in_dict

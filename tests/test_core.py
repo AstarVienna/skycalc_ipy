@@ -48,9 +48,3 @@ class TestAlmanacInit:
         skp.update({"mjd": "bogus"})
         with raises(ValueError):
             core.AlmanacQuery(skp)
-
-
-class TestAlmanacQuery:
-
-    def test_response_with_valid_data(self):
-        pass
