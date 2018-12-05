@@ -178,9 +178,9 @@ class SkyModel:
             'msolflux': 130.0,  # s.f.u float > 0
 
             # Scattered Moon Light
-            # Moon coordinate constraints: |z - zmoon| ≤ rho ≤ |z + zmoon| where
-            # rho=moon/target separation, z=90-target altitude and
-            # zmoon=90-moon altitude.
+            # Moon coordinate constraints: |z - zmoon| <= rho <= |z + zmoon|
+            # where rho = moon/target separation, z = 90-target altitude and
+            # zmoon = 90-moon altitude.
             # string grid ['Y','N'] flag for inclusion of scattered moonlight.
             'incl_moon': 'Y',
             # degrees float range [0.0,360.0] Separation of Sun and Moon as
