@@ -1,13 +1,10 @@
-We currently don't know anything about licences, nor have we thought about 
-them. No doubt, this will change in the future.
+We currently know little about licences
+No doubt, this will change in the future.
 For the moment though, we invoke the licence of honour. 
 Ask yourself, what would Thor do?
 
-
 ###############################################################################
-Additionally, the original skycalc_cli package comes with the PyPA licence
-
-Copyright (c) 2016 The Python Packaging Authority (PyPA)
+Additionally, the original skycalc_cli package comes with an MIT licence:
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in

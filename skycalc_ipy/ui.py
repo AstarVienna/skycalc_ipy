@@ -47,8 +47,9 @@ class SkyCalc:
             param_names = [param_names]
 
         for pname in param_names:
-            if pname not in self.comments.keys():
-                print(pname + " not found")
+            if pname not in self.comments:
+                msg = pname + " not found"
+                print(msg)
             else:
                 print("{} : {}".format(pname, self.comments[pname]))
 
@@ -103,7 +104,6 @@ class SkyCalc:
 
         result = get_almanac_data(ra=ra, dec=dec, date=date, mjd=mjd,
                                   observatory=observatory)
-        print(observatory, result["observatory"], self.values["observatory"])
         if update_values:
             self.values.update(result)
 
@@ -147,7 +147,15 @@ class SkyCalc:
 
         if "tab" in return_type:
             tbl.meta.update(meta_data)
-            return tbl
+
+            if "ext" in return_type:
+                tbl_return = tbl
+            else:
+                tbl_small = table.Table()
+                tbl_small.add_columns([tbl["lam"], tbl["trans"], tbl["flux"]])
+                tbl_return = tbl_small
+
+            return tbl_return
 
         elif "arr" in return_type:
 
@@ -237,16 +245,16 @@ def get_almanac_data(ra, dec, date=None, mjd=None, return_full_dict=False,
         return response
 
 
-def fix_observatory(in_dict):
-
-    if isinstance(in_dict, SkyCalc):
-        in_dict = in_dict.values
-
-    if "observatory" in in_dict and in_dict["observatory"] in observatory_dict:
-        in_dict["observatory_orig"] = deepcopy(in_dict["observatory"])
-        in_dict["observatory"] = observatory_dict[in_dict["observatory"]]
-    else:
-        raise ValueError("Wrong Observatory name. "
-                         "See `skycalc.ui.observatory_dict`")
-
-    return in_dict
+# def fix_observatory(in_dict):
+#
+#     if isinstance(in_dict, SkyCalc):
+#         in_dict = in_dict.values
+#
+#     if "observatory" in in_dict and in_dict["observatory"] in observatory_dict:
+#         in_dict["observatory_orig"] = deepcopy(in_dict["observatory"])
+#         in_dict["observatory"] = observatory_dict[in_dict["observatory"]]
+#     else:
+#         raise ValueError("Wrong Observatory name. "
+#                          "See `skycalc.ui.observatory_dict`")
+#
+#     return in_dict

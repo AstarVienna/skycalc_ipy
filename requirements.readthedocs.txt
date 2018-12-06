@@ -1,7 +1,6 @@
 numpy
 astropy
 synphot
-wget
 requests
 matplotlib
 pyyaml

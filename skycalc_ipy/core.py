@@ -1,5 +1,8 @@
-"""skycalc Module
-Taken from the skycalc_cli version 1.0 installation file
+"""
+Based on the skycalc_cli package.
+
+This modele was taken (mostly unmodified) from ``skycalc_cli`` version 1.1.
+Credit for ``skycalc_cli`` goes to ESO
 """
 
 from __future__ import print_function
@@ -10,7 +13,25 @@ import requests
 
 
 class AlmanacQuery:
-    """AlmanacQuery for Querying the SkyCalc Almanac"""
+    """
+    A class for querying the SkyCalc Almanac
+
+    Parameters
+    ----------
+    indic : dict, SkyCalcParams
+        A dictionary / :class:``SkyCalcParams`` object containing the following
+        keywords: ``ra``, ``dec``, ``date`` or ``mjd``
+
+        - ``ra`` : [deg] a float in the range [0, 360]
+        - ``dec`` : [deg] a float in the range [-90, 90]
+
+        And either ``data`` or ``mjd``:
+
+        - ``date`` : a datetime string in the format 'yyyy-mm-ddThh:mm:ss'
+        - ``mjd`` : a float with the modified julian date. Note that ``mjd=0``
+            corresponds to the date "1858-11-17"
+
+    """
 
     def __init__(self, indic):
 
@@ -94,6 +115,15 @@ class AlmanacQuery:
             self.almindic['observatory'] = indic['observatory']
 
     def query(self):
+        """
+        Queries the ESO Skycalc server with the parameters in self.almindic
+
+        Returns
+        -------
+        almdata : dict
+            Dictionary with the relevant parameters for the date given
+
+        """
 
         url = self.almserver + self.almurl
 
@@ -145,7 +175,18 @@ class bcolors:
 
 
 class SkyModel:
-    """SkyModel for querying the Advanced SkyModel"""
+    """
+    Class for querying the Advanced SkyModel at ESO
+
+    Contains all the parameters needed for querying the ESO SkyCalc server.
+    The parameters are contained in :attr:`.params` and the returned FITS file
+    is in :attr:`.data` in binary form. This must be saved to disk before it
+    can be read with the :meth:`.write` method.
+
+    Parameter and their default values and comments can be found at:
+    http://www.eso.org/observing/etc/bin/gen/form?INS.MODE=swspectr+INS.NAME=SKYCALC
+
+    """
 
     def __init__(self):
 
@@ -254,6 +295,13 @@ class SkyModel:
         }
 
     def fixObservatory(self):
+        """
+        Converts the human readable observatory name into its ESO ID number
+
+        The following observatory names are accepted: ``lasilla``, ``paranal``,
+        ``armazones`` or ``3060m``, ``highanddry`` or ``5000m``
+
+        """
 
         if self.params['observatory'] == 'lasilla':
             self.params['observatory'] = '2400'
@@ -262,7 +310,8 @@ class SkyModel:
         elif (self.params['observatory'] == '3060m' or
               self.params['observatory'] == 'armazones'):
             self.params['observatory'] = '3060'
-        elif self.params['observatory'] == '5000m':
+        elif (self.params['observatory'] == '5000m' or
+              self.params['observatory'] == 'highanddry'):
             self.params['observatory'] = '5000'
         else:
             raise ValueError('Wrong Observatory name, please refer to the '
@@ -280,14 +329,14 @@ class SkyModel:
         print(msg)
         print(e)
         print(self.bugreport_text)
-        if(self.stop_on_errors_and_exceptions):
+        if self.stop_on_errors_and_exceptions:
             sys.exit()
 
     # handle the kind of errors we issue ourselves.
     def handle_error(self, msg, stop=True):
         print(msg)
         print(self.bugreport_text)
-        if(self.stop_on_errors_and_exceptions):
+        if self.stop_on_errors_and_exceptions:
             sys.exit()
 
     def retrieve_data(self, url):
@@ -371,6 +420,15 @@ class SkyModel:
         self.call()
 
     def printparams(self, keys=None):
+        """
+        List the values of all, or a subset, of parameters
+
+        Parameters
+        ----------
+        keys : list or tuple, optional
+            If given, then a list of keyword names
+
+        """
         if keys is None:
             p = self.params
         else:
@@ -408,154 +466,3 @@ class SkyModel:
 
     def reset(self):
         self.__init__()
-
-
-######################################
-# Beginning of skycalc_cli.py
-######################################
-#
-# import pkg_resources
-# import getopt
-#
-#
-# def loadTxt(inputFile):
-#
-#     result = {}
-#
-#     lineN = 0
-#     for line in inputFile.readlines():
-#
-#         lineN += 1
-#
-#         originalLine = line
-#         line = line.strip()
-#         if len(line) == 0 or line[0] == '#':
-#             continue
-#         line = line.split(':')
-#         if len(line) > 2 and line[0].strip() == 'date':
-#             line = [line[0], ':'.join(line[1::])]
-#         elif len(line) != 2 or (len(line) == 2 and (line[0].strip() == '' or
-#                                                     line[1].strip() == '')):
-#             print('WARNING: input file line ' + str(lineN) +
-#                   ': wrong format: ignored.')
-#             print(originalLine.rstrip())
-#             continue
-#         key = line[0].strip()
-#         value = line[1].strip()
-#
-#         # Is it an integer?
-#         try:
-#             value = int(value)
-#         except ValueError:
-#             # Is it an float?
-#             try:
-#                 value = float(value)
-#             except ValueError:
-#                 pass
-#
-#         result[key] = value
-#
-#     return result
-#
-#
-# def main():
-#
-#     argv = sys.argv[1:]
-#
-#     almFilename = None
-#     inputFilename = None
-#     outputFilename = None
-#     isVerbose = False
-#
-#     # Read command line arguments
-#     try:
-#         opts, args = getopt.getopt(argv, "hva:i:o:", ["help", "verbose",
-#                                                       "version",
-#                                                       "alm=", "in=", "out="])
-#     except getopt.GetoptError:
-#         usage()
-#         sys.exit(1)
-#
-#     for opt, arg in opts:
-#         if opt in ("-h", "--help"):
-#             usage()
-#             sys.exit()
-#         elif opt in ("--version"):
-#             version = pkg_resources.require("skycalc_cli")[0].version
-#             print('skycalc_cli version ' + version)
-#             sys.exit(0)
-#         elif opt in ("-v", "--verbose"):
-#             isVerbose = True
-#         elif opt in ("-a", "--alm"):
-#             almFilename = arg
-#         elif opt in ("-i", "--in"):
-#             inputFilename = arg
-#         elif opt in ("-o", "--out"):
-#             outputFilename = arg
-#
-#     if not ((inputFilename or almFilename) and outputFilename):
-#         usage()
-#         sys.exit(1)
-#
-#     dic = {}
-#
-#     # Query the Almanac if alm option is enabled
-#     if almFilename:
-#
-#         # Read the input parameters
-#         inputalmdic = None
-#         try:
-#             with open(almFilename, 'r') as f:
-#                 inputalmdic = json.load(f)
-#         except ValueError:
-#             with open(almFilename, 'r') as f:
-#                 inputalmdic = loadTxt(f)
-#
-#         if not inputalmdic:
-#             raise ValueError('Error: cannot read' + almFilename)
-#
-#         alm = AlmanacQuery(inputalmdic)
-#         dic = alm.query()
-#
-#     if isVerbose:
-#         print('Data retrieved from the Almanac:')
-#         for key, value in dic.items():
-#             print('\t' + str(key) + ': ' + str(value))
-#
-#     if inputFilename:
-#
-#         # Read input parameters
-#         inputdic = None
-#         try:
-#             with open(inputFilename, 'r') as f:
-#                 inputdic = json.load(f)
-#         except ValueError:
-#             with open(inputFilename, 'r') as f:
-#                 inputdic = loadTxt(f)
-#
-#         if not inputdic:
-#             raise ValueError('Error: cannot read ' + inputFilename)
-#
-#         # Override input parameters
-#         if isVerbose:
-#             print('Data overridden by the user\'s input file:')
-#         for key, value in inputdic.items():
-#             if isVerbose and key in dic:
-#                 print('\t' + str(key) + ': ' + str(value))
-#             dic[key] = value
-#
-#     # Fix the observatory to fit the backend
-#     try:
-#         dic = fixObservatory(dic)
-#     except ValueError:
-#         raise
-#
-#     if isVerbose:
-#         print('Data submitted to SkyCalc:')
-#         for key, value in dic.items():
-#             print('\t' + str(key) + ': ' + str(value))
-#
-#     # Get the Sky
-#     skyModel = SkyModel()
-#     skyModel.callwith(dic)
-#     skyModel.write(outputFilename)

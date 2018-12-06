@@ -12,7 +12,7 @@ __pycache__/
 *.egg
 
 # Sphinx documentation
-docs/_build/
+docs/build/
 docs/source/reference
 
 # IPython Notebook

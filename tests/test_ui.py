@@ -196,25 +196,25 @@ class TestFunctionGetAlmanacData:
         assert output == "Warning: Both date and mjd are set. Using date"
         assert out_dict_both == out_dict_date
 
-
-class TestFunctionFixObservatory:
-
-    def test_returns_corrected_dict_for_valid_observatory(self):
-        in_dict = {"observatory": "paranal"}
-        out_dict = ui.fix_observatory(in_dict)
-        assert out_dict["observatory"] == "2640"
-        assert out_dict["observatory_orig"] == "paranal"
-
-    def test_returns_corrected_SkyCalcParams_for_valid_observatory(self):
-        skp["observatory"] = "paranal"
-        out_dict = ui.fix_observatory(skp)
-        assert out_dict["observatory"] == "2640"
-
-    def test_returns_exception_for_in_valid_observatory(self):
-        in_dict = {"observatory" : "deutsch-wagram"}
-        with raises(Exception):
-            ui.fix_observatory(in_dict)
-
-    def test_returns_exception_for_wrong_indict_data_type(self):
-        with raises(Exception):
-            ui.fix_observatory("Bogus")
+#
+# class TestFunctionFixObservatory:
+#
+#     def test_returns_corrected_dict_for_valid_observatory(self):
+#         in_dict = {"observatory": "paranal"}
+#         out_dict = ui.fix_observatory(in_dict)
+#         assert out_dict["observatory"] == "2640"
+#         assert out_dict["observatory_orig"] == "paranal"
+#
+#     def test_returns_corrected_SkyCalcParams_for_valid_observatory(self):
+#         skp["observatory"] = "paranal"
+#         out_dict = ui.fix_observatory(skp)
+#         assert out_dict["observatory"] == "2640"
+#
+#     def test_returns_exception_for_in_valid_observatory(self):
+#         in_dict = {"observatory" : "deutsch-wagram"}
+#         with raises(Exception):
+#             ui.fix_observatory(in_dict)
+#
+#     def test_returns_exception_for_wrong_indict_data_type(self):
+#         with raises(Exception):
+#             ui.fix_observatory("Bogus")
