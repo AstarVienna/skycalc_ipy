@@ -38,8 +38,8 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.coverage',
               'sphinx.ext.mathjax',
               'sphinx.ext.viewcode',
-              'sphinxcontrib.apidoc',
               'numpydoc',
+              'sphinxcontrib.apidoc',
               'matplotlib.sphinxext.plot_directive',
               ]
 
