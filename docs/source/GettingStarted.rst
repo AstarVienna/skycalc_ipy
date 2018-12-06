@@ -51,7 +51,7 @@ By default the data returned by the method is formatted as an astropy
 :class:`~astropy.table.Table()` object, and is a shortened version of the full
 FITS file. In order to have the full 18-column table returned, the parameter
 ``return_type="table-extended"`` should be passed (`tab-ext` also works).
-A number of formats can be returned by `.get_sky_spectrum(return_type=...)`
+A number of formats can be returned by ``.get_sky_spectrum(return_type=...)``
 including:
 
 ============== ======== ========

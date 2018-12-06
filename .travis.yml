@@ -6,13 +6,14 @@ python:
     
 install:
     - pip install -r requirements.travis.txt
-    - pip install .
     - pip install pytest-cov
     - pip install coveralls
+    - pip install .
 
 script:
     - pytest
-    - pytest --doctest-modules
     - pytest --cov=skycalc_ipy/
+    - pytest --doctest-modules
+
 after_success:
     - coveralls
