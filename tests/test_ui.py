@@ -43,13 +43,13 @@ class TestSkycalcParamsInit:
     def test_print_comments_single_keywords(self, capsys):
         skp.print_comments("airmass")
         output = capsys.readouterr()[0].strip()
-        assert output == "airmass in range [1.0, 3.0]"
+        assert output == "airmass : airmass in range [1.0, 3.0]"
 
     def test_print_comments_mutliple_keywords(self, capsys):
         skp.print_comments(["airmass", "season"])
         output = capsys.readouterr()[0].strip()
-        assert output == "airmass in range [1.0, 3.0]\n" + \
-                         "0=all year, 1=dec/jan,2=feb/mar..."
+        assert output == "airmass : airmass in range [1.0, 3.0]\n" + \
+                         "season : 0=all year, 1=dec/jan,2=feb/mar..."
 
     def test_print_comments_misspelled_keyword(self, capsys):
         skp.print_comments(["iarmass"])
