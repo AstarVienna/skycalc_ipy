@@ -12,7 +12,7 @@ install:
 
 script:
     - pytest
-    - pytest --cov
+    - pytest --cov=./
     - pytest --doctest-modules
 
 after_success:
