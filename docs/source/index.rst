@@ -24,8 +24,8 @@ on the ESO SkyCalc server. For references to SkyCalc see `ESO SkyCalc`_,
    :caption: Contents:
 
    GettingStarted
-   reference/skycalc_ipy.ui
-   reference/skycalc_ipy.core
+   `Reference API <reference/skycalc_ipy>`
+
 
 Dependencies
 ------------
