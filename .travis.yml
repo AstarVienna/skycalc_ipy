@@ -13,7 +13,7 @@ install:
 script:
     - pytest
     - pytest --doctest-modules
-    - pytest --cov=../
+    - pytest --cov=skycalc_ipy/
 
 after_success:
     - coveralls
