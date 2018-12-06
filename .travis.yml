@@ -12,8 +12,8 @@ install:
 
 script:
     - pytest
-    - pytest --cov=./
     - pytest --doctest-modules
+    - pytest --cov=../
 
 after_success:
     - coveralls
