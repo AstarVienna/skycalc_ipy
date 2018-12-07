@@ -4,6 +4,15 @@ Getting Started
 A basic SkyCalc query
 ---------------------
 
+:class:`synphot.SourceSpectrum`
+
+:class:`synphot.models.SourceSpectrum`
+
+:class:`synphot.models.Empirical1D`
+
+:class:`astropy.table.Table`
+
+
 ``SkyCalc_iPy`` is very basic. We start by making a :class:`SkyCalc`
 object::
 
@@ -107,7 +116,7 @@ To check what the **default value** for a parameter was, use the
     >>> skycalc.defaults["incl_moon"]
     >>> 'Y'
 
-In summary, the :class:`SkyCalc`object contains the following 5
+In summary, the :class:`SkyCalc` object contains the following 5
 list/dictionaries:
 
 - :attr:`.keys`
@@ -178,7 +187,8 @@ In full we have:
     >>> tbl = skycalc.get_sky_spectrum()
     >>>
     >>> plt.plot(tbl["lam"], tbl["flux"])
-    >>> plt.xlabel("Wavelength" + str(tbl["lam"].unit))
-    >>> plt.xlabel("Flux" + str(tbl["flux"].unit))
+    >>> plt.xlabel("Wavelength " + str(tbl["lam"].unit))
+    >>> plt.ylabel("Flux " + str(tbl["flux"].unit))
+    >>> plt.semilogy()
 
 ..

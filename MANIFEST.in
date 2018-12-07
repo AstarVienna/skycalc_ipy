@@ -1,1 +1,2 @@
+include LICENCE
 include skycalc_ipy/*.yaml

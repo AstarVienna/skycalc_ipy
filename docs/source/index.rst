@@ -32,11 +32,15 @@ Dependencies
 
 The following packages are required for normal operation:
 
-:mod:`requests`, :mod:`pyyaml`, :mod:`numpy`, :mod:`astropy`
+* :mod:`requests`
+* :mod:`pyyaml`
+* :mod:`numpy`
+* :mod:`astropy`
 
 The following packages are optional:
 
-:mod:`matplotlib`, :mod:`synphot`
+* :mod:`matplotlib`
+* :mod:`synphot`
 
 
 

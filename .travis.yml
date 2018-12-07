@@ -13,7 +13,8 @@ install:
 script:
     - pytest
     - pytest --doctest-modules
-    - pytest --cov=skycalc_ipy/
+    # - pytest --cov=skycalc_ipy/
 
 after_success:
-    - coveralls
+    - coverage run --source=skycalc_ipy setup.py test
+    - COVERALLS_REPO_TOKEN=uaxm2HqUvuTVaPsuyXrY2Hicv0GrHB1sp  coveralls
