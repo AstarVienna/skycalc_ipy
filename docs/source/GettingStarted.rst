@@ -56,7 +56,12 @@ By default the data returned by the method is formatted as an astropy
 FITS file. In order to have the full 18-column table returned, the parameter
 ``return_type="table-extended"`` should be passed (`tab-ext` also works).
 A number of formats can be returned by ``.get_sky_spectrum(return_type=...)``
-including:
+including::
+
+    >>> tbl = skycalc.get_sky_spectrum(return_type="array")
+    >>> tbl = skycalc.get_sky_spectrum(return_type="synphot")
+    >>> tbl = skycalc.get_sky_spectrum(return_type="tab-ext")
+
 
 ============== ======== ========
 Value          Shortcut Returned
