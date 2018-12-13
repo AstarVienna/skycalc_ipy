@@ -16,8 +16,7 @@ class TestLoadYaml:
 
     def test_finds_file_for_specified_path(self):
         dirname = os.path.dirname(inspect.getfile(inspect.currentframe()))
-        yaml_dict = ui.load_yaml(os.path.join(dirname, "../skycalc_ipy",
-                                              "params.yaml"))
+        yaml_dict = ui.load_yaml(os.path.join(dirname, "../params.yaml"))
         assert yaml_dict["season"][0] == 0
 
     def test_throws_exception_for_nonexistent_file(self):
