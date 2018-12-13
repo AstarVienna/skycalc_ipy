@@ -4,16 +4,7 @@ Getting Started
 A basic SkyCalc query
 ---------------------
 
-:class:`synphot.SourceSpectrum`
-
-:class:`synphot.models.SourceSpectrum`
-
-:class:`synphot.models.Empirical1D`
-
-:class:`astropy.table.Table`
-
-
-``SkyCalc_iPy`` is very basic. We start by making a :class:`SkyCalc`
+SkyCalc_iPy is very basic. We start by making a :class:`SkyCalc`
 object::
 
     >>> import skycalc_ipy
@@ -52,10 +43,14 @@ would have something like this:
     plt.semilogy()
 
 
+Returned FITS file
+~~~~~~~~~~~~~~~~~~
 The FITS file returned from the ESO server is automatically saved in our
 working directory under the name ``skycalc_temp.fits``. This can changed by
 passing a different name to ``.get_sky_spectrum(filename=)``.
 
+Returning different data formats in Python
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 By default the data returned by the method is formatted as an astropy
 :class:`~astropy.table.Table()` object, and is a shortened version of the full
 FITS file. In order to have the full 18-column table returned, the parameter
@@ -191,4 +186,10 @@ In full we have:
     >>> plt.ylabel("Flux " + str(tbl["flux"].unit))
     >>> plt.semilogy()
 
-..
+
+Customs lists of values
+-----------------------
+
+SkyCalc_iPy uses the :mod:`pyyaml` package to parse input. 
+
+More coming here

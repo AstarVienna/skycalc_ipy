@@ -1,8 +1,3 @@
-.. skycalc_ipy documentation master file, created by
-   sphinx-quickstart on Tue Dec  4 09:31:52 2018.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 Welcome to Skycalc iPY's documentation!
 =======================================
 
@@ -27,6 +22,20 @@ on the ESO SkyCalc server. For references to SkyCalc see `ESO SkyCalc`_,
    Reference API <reference/skycalc_ipy>
 
 
+Installation
+------------
+
+To install SkyCalc ipy, either use pip or download the tar file for this link::
+
+    pip install https://univie.ac.at/simcado/skycalc_ipy/skycalc-ipy-0.1.dev0.tar.gz
+
+This is still the very first version of SkyCalc iPy, so please contact us on
+GithHub if you find any bugs or issues, or would like to see different 
+functionality included.
+
+https://github.com/astronomyk/skycalc_ipy/
+
+
 Dependencies
 ------------
 
@@ -41,15 +50,6 @@ The following packages are optional:
 
 * :mod:`matplotlib`
 * :mod:`synphot`
-
-
-
-
-
-
-
-
-
 
 
 Indices and tables

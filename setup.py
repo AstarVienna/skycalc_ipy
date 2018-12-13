@@ -12,7 +12,7 @@ with open('LICENCE') as f:
 __version__ = "0.1dev"
 
 setup(
-    name='skycalc_ipy',
+    name='skycalc-ipy',
     version=__version__,
     description='Get atmospheric spectral information',
     long_description=__readme__,
