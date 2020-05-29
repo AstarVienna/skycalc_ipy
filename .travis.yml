@@ -3,11 +3,13 @@ python:
     - 2.7
     - 3.5
     - 3.6
-    
+    - 3.7
+    - 3.8
+
 install:
     - pip install -r requirements.travis.txt
-    - pip install pytest-cov
-    - pip install coveralls
+#    - pip install pytest-cov
+#    - pip install coveralls
     - pip install .
 
 script:
@@ -15,6 +17,6 @@ script:
     - pytest --doctest-modules
     # - pytest --cov=skycalc_ipy/
 
-after_success:
-    - coverage run --source=skycalc_ipy setup.py test
-    - COVERALLS_REPO_TOKEN=uaxm2HqUvuTVaPsuyXrY2Hicv0GrHB1sp  coveralls
+#after_success:
+#    - coverage run --source=skycalc_ipy setup.py test
+#    - COVERALLS_REPO_TOKEN=uaxm2HqUvuTVaPsuyXrY2Hicv0GrHB1sp  coveralls
