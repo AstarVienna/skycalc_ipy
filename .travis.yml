@@ -1,22 +1,36 @@
 language: python
-python:
-    - 2.7
-    - 3.5
-    - 3.6
-    - 3.7
-    - 3.8
+job:
+  include:
+    - name: python 2.7
+      python: 2.7
+      install:
+        - pip install -r requirements.travis.txt
+        - pip install .
 
-install:
-    - pip install -r requirements.travis.txt
-#    - pip install pytest-cov
-#    - pip install coveralls
-    - pip install .
+    - name: python 3.5
+      python: 3.5
+      install:
+        - pip install -r requirements.travis.py35.txt
+        - pip install .
+
+    - name: python 3.6
+      python: 3.6
+      install:
+        - pip install -r requirements.travis.txt
+        - pip install .
+
+    - name: python 3.7
+      python: 3.7
+      install:
+        - pip install -r requirements.travis.txt
+        - pip install .
+
+    - name: python 3.8
+      python: 3.8
+      install:
+        - pip install -r requirements.travis.txt
+        - pip install .
 
 script:
     - pytest
     - pytest --doctest-modules
-    # - pytest --cov=skycalc_ipy/
-
-#after_success:
-#    - coverage run --source=skycalc_ipy setup.py test
-#    - COVERALLS_REPO_TOKEN=uaxm2HqUvuTVaPsuyXrY2Hicv0GrHB1sp  coveralls

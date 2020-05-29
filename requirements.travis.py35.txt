@@ -1,0 +1,7 @@
+numpy>=1.16
+astropy<=3.2
+synphot<0.2
+wget
+requests
+matplotlib
+pyyaml
