@@ -1,6 +1,12 @@
 Skycalc-iPy - A SkyCalc wrapper for Interactive Python
 ======================================================
 
+.. image:: _static/logos/logo_skycalc_ipy.png
+    :width: 600 px
+    :alt: Welcome to the SkyCalc-iPy Documentation!
+    :align: center
+
+
 |logo| Another tool by the A* Vienna software team
 
 .. |logo| image:: https://raw.githubusercontent.com/AstarVienna/astarvienna.github.io/main/logos/star_small_t.png

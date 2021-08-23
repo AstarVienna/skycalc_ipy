@@ -184,15 +184,15 @@ wmin :
   - 300.
   - float
   - range
-  - [300., 300000.]
-  - "[300., 3e5] nm. Minimum wavelength. Must be lesser than wmin"
+  - [300., 30000.]
+  - "[300., 3e4] nm. Minimum wavelength. Must be lesser than wmin"
 
 wmax :
   - 2000.
   - float
   - range
-  - [300., 300000.]
-  - "[300., 3e5] nm. Maximum wavelength. Must be greater than wmin"
+  - [300., 30000.]
+  - "[300., 3e4] nm. Maximum wavelength. Must be greater than wmin"
 
 wgrid_mode :
   - fixed_wavelength_step
