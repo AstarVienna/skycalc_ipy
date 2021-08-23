@@ -25,15 +25,15 @@ on the ESO SkyCalc server. For references to SkyCalc see `ESO SkyCalc`_,
 Installation
 ------------
 
-To install SkyCalc ipy, either use pip or download the tar file for this link::
+Skycalc_ipy is available on PyPi::
 
-    pip install https://univie.ac.at/simcado/skycalc_ipy/skycalc-ipy-0.1.dev0.tar.gz
+    pip install skycalc_ipy
 
-This is still the very first version of SkyCalc iPy, so please contact us on
-GithHub if you find any bugs or issues, or would like to see different 
-functionality included.
+This is still the very first version of SkyCalc iPy, so please open an issue on
+GithHub if you find any bugs, or if would like to see different functionality
+included.
 
-https://github.com/astronomyk/skycalc_ipy/
+https://github.com/AstarVienna/skycalc_ipy/issues
 
 
 Dependencies
