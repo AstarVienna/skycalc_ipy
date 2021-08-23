@@ -134,7 +134,7 @@ based on the recorded atmospheric conditions using the ESO Almanac service::
     >>> skycalc.get_almanac_data(ra=83.8221, dec=-5.3911,
                                  date="2018-12-06T06:00:00")
     {'airmass': 1.07729,
-     'msolflux': -1,
+     'msolflux': -1,                # See WARNING below!
      'moon_sun_sep': 347.059,
      'moon_target_sep': 149.041,
      'moon_alt': -37.9918,
@@ -154,6 +154,14 @@ we can set the ``update_values`` flag to ``True``::
     >>> skycalc["airmass"]
     1.07729
 
+.. warning:: The Almanac currently returns `msolflux=-1` for dates after 2019-01-31.
+
+    This indicates an error on the Almanac side. The only way to deal with this
+    (without being super hacky) is for the user to reset the average solar flux
+    to something normal before proceeding::
+
+        >>> skycalc["msolflux"] = 130       # sfu
+
 If we would like to review the almanac data (i.e. default
 ``update_values=False``) and then decide to add them to our :class:`SkyCalc`
 object, the easiest way is with the :meth:`.update` method::
@@ -171,6 +179,11 @@ for our desired date and time::
 
     >>> wave, trans, flux = skycalc.get_sky_spectrum(return_type="arrays")
 
+For dates after 2019-01-31, we must manually reset the average solar flux before
+calling `get_sky_spectrum` method again::
+
+    >>> skycalc["msolflux"] = 130       # sfu
+    >>> wave, trans, flux = skycalc.get_sky_spectrum(return_type="arrays")
 
 In full we have:
 
@@ -184,6 +197,7 @@ In full we have:
     >>> skycalc.get_almanac_data(ra=83.8221, dec=-5.3911,
     ...                          date="2017-12-24T04:00:00",
     ...                          update_values=True)
+    >>> # skycalc["msolflux"] = 130       # [sfu] For dates after 2019-01-31
     >>> tbl = skycalc.get_sky_spectrum()
     >>>
     >>> plt.plot(tbl["lam"], tbl["flux"])
