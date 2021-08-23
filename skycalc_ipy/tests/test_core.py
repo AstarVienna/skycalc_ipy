@@ -7,6 +7,7 @@ from datetime import datetime as dt
 # Mocks
 skp = ui.SkyCalc()
 
+
 class TestAlmanacInit:
 
     def test_throws_exception_when_passed_virgin_SkyCalcParams(self):

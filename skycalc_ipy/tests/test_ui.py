@@ -12,6 +12,7 @@ skp2 = ui.SkyCalc()
 skp_small = ui.SkyCalc()
 skp_small["wdelta"] = 100
 
+
 class TestLoadYaml:
 
     def test_finds_file_for_specified_path(self):
@@ -194,6 +195,15 @@ class TestFunctionGetAlmanacData:
         output = capsys.readouterr()[0].strip()
         assert output == "Warning: Both date and mjd are set. Using date"
         assert out_dict_both == out_dict_date
+
+
+class TestDocExamples:
+    def test_example(self):
+        skycalc = ui.SkyCalc()
+        skycalc.get_almanac_data(ra=83.8221, dec=-5.3911,
+                                 date="2017-12-24T04:00:00", update_values=True)
+        tbl = skycalc.get_sky_spectrum()
+        assert len(tbl) == 1701
 
 #
 # class TestFunctionFixObservatory:
