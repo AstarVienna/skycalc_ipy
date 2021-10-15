@@ -216,9 +216,9 @@ def load_yaml(ipt_str):
 
         with open(ipt_str, "r") as fd:
             fd = "\n".join(fd.readlines())
-        opts_dict = yaml.load(fd)
+        opts_dict = yaml.load(fd, Loader=yaml.FullLoader)
     else:
-        opts_dict = yaml.load(ipt_str)
+        opts_dict = yaml.load(ipt_str, Loader=yaml.FullLoader)
 
     return opts_dict
 
