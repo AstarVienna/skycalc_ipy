@@ -3,11 +3,11 @@
     :alt: Welcome to the SkyCalc-iPy Documentation!
     :align: center
 
-|logo| Another tool by the A* Vienna software team
+<img src="https://raw.githubusercontent.com/AstarVienna/astarvienna.github.io/main/logos/star_small_t.png" height="30" align="middle">
+Another tool by the [A* Vienna software team][AstarV Link]
 
-.. |logo| image:: https://raw.githubusercontent.com/AstarVienna/astarvienna.github.io/main/logos/star_small_t.png
-   :height: 30px
-   :align: middle
+[AstarV Link]: https://astarvienna.github.io/
+
 
 A SkyCalc wrapper for Interactive Python
 ----------------------------------------
