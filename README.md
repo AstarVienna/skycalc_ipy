@@ -1,7 +1,7 @@
 # skycalc_ipy
 
 [![Documentation Status](https://readthedocs.org/projects/skycalc-ipy/badge/?version=latest)](https://skycalc-ipy.readthedocs.io/en/latest/?badge=latest)
-[![Documentation Status](https://travis-ci.org/astronomyk/skycalc_ipy.svg?branch=master)](https://travis-ci.org/astronomyk/skycalc_ipy.svg?branch=master)
+[![Workflow Status](https://github.com/AstarVienna/skycalc_ipy/actions/workflows/tests.yml/badge.svg)](https://github.com/AstarVienna/skycalc_ipy/actions/workflows/tests.yml)
 
 [![](http://github-actions.40ants.com/AstarVienna/skycalc_ipy/matrix.svg)](https://github.com/AstarVienna/skycalc_ipy)
 
