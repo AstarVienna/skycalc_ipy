@@ -33,7 +33,7 @@ on the ESO SkyCalc server. For references to SkyCalc see `ESO SkyCalc`_,
    GettingStarted
    Reference API <reference/skycalc_ipy>
 
-.. note:: TL;DR: Upgrade to SkyCalc-ipy v1.2 to fix the PyYaml warning/error
+.. warning:: TL;DR: Upgrade to SkyCalc-ipy v1.2 to fix the PyYaml warning/error
 
     SkyCalc-ipy v1.1 is only compatible with versions of PyYaml <=5.4.
     PyYaml v6+ removed backwards compatibility by forcing the user to pass a
