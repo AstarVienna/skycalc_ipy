@@ -8,6 +8,7 @@ import numpy as np
 
 from astropy import units as u
 from astropy.io import fits
+from yaml import Loader
 
 from .core import AlmanacQuery, SkyModel
 
