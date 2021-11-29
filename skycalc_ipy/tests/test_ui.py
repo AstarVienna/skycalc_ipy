@@ -91,7 +91,7 @@ class TestSkyCalcParamsGetSkySpectrum:
         assert "lam" in tbl.colnames
         assert "flux" in tbl.colnames
         assert "trans" in tbl.colnames
-        assert len(tbl) == 18
+        assert len(tbl) == 4606
 
     def test_throws_exception_for_invalid_parameters(self):
         skp["airmass"] = 9001
@@ -203,7 +203,7 @@ class TestDocExamples:
         skycalc.get_almanac_data(ra=83.8221, dec=-5.3911,
                                  date="2017-12-24T04:00:00", update_values=True)
         tbl = skycalc.get_sky_spectrum()
-        assert len(tbl) == 1701
+        assert len(tbl) == 4606
 
 #
 # class TestFunctionFixObservatory:
