@@ -96,7 +96,6 @@ class SkyCalc:
 
         return valid
 
-
     def get_almanac_data(self, ra, dec, date=None, mjd=None,
                          observatory=None, update_values=False):
 
@@ -230,7 +229,6 @@ class SkyCalc:
 
 
 def load_yaml(ipt_str):
-
     if ".yaml" in ipt_str.lower():
         if not os.path.exists(ipt_str):
             raise ValueError(ipt_str + " not found")
