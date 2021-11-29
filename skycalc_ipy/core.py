@@ -11,6 +11,8 @@ import json
 from datetime import datetime
 import requests
 
+from astropy.io import fits
+
 
 class AlmanacQuery:
     """
@@ -341,19 +343,34 @@ class SkyModel:
 
     def retrieve_data(self, url):
         try:
-            response = requests.get(url, stream=True)
-            self.data = response.content
+            self.data = fits.open(url)
         except requests.exceptions.RequestException as e:
             self.handle_exception(
                 e, 'Exception raised trying to get FITS data from ' + url)
 
-    def write(self, local_filename):
+    def write(self, local_filename, **kwargs):
         try:
-            with open(local_filename, 'wb') as f:
-                f.write(self.data)
+            self.data.writeto(local_filename, **kwargs)
         except IOError as e:
             self.handle_exception(
                 e, 'Exception raised trying to write fits file ')
+
+    # ORIGINAL CODE
+    # def retrieve_data(self, url):
+    #     try:
+    #         response = requests.get(url, stream=True)
+    #         self.data = response.content
+    #     except requests.exceptions.RequestException as e:
+    #         self.handle_exception(
+    #             e, 'Exception raised trying to get FITS data from ' + url)
+
+    # def write(self, local_filename):
+    #     try:
+    #         with open(local_filename, 'wb') as f:
+    #             f.write(self.data)
+    #     except IOError as e:
+    #         self.handle_exception(
+    #             e, 'Exception raised trying to write fits file ')
 
     def getdata(self):
         return self.data
