@@ -43,6 +43,10 @@ on the ESO SkyCalc server. For references to SkyCalc see `ESO SkyCalc`_,
     - `wgrid_mode`: --> `fixed_spectral_resolution`
     - `wres`: --> `1000  wave/dwave`
 
+.. note:: v0.1.3: No longer saves a temporary FITS file to disk.
+
+    SkyCalc now uses astropy to download the fits file from the SkyCalc server.
+    The HDUList is now stored internally in `<SkyCalc>.last_skycalc_response`.
 
 .. note:: v0.1.2: Upgrade fixes PyYaml warning/error for PyYaml >=6.0
 
