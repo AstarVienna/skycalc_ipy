@@ -1,6 +1,5 @@
 import os
 import inspect
-from copy import deepcopy
 from datetime import datetime as dt
 
 import yaml
@@ -8,7 +7,6 @@ import numpy as np
 
 from astropy import units as u
 from astropy.io import fits
-from yaml import Loader
 
 from .core import AlmanacQuery, SkyModel
 
@@ -38,6 +36,8 @@ class SkyCalc:
         self.check_type = {pp : params[pp][2] for pp in params}
         self.allowed    = {pp : params[pp][3] for pp in params}
         self.comments   = {pp : params[pp][4] for pp in params}
+
+        self.last_skycalc_response = None
 
     def print_comments(self, param_names=None):
 
@@ -110,13 +110,34 @@ class SkyCalc:
 
         return result
 
-
     def get_sky_spectrum(self, return_type="table", filename=None):
+        """
+        Retrieve a fits.HDUList object from the SkyCalc server
+
+        The HDUList can be returned in a variety of formats.
+
+        As of v0.1.3 the HDUList is no longer saved to disk.
+        Rather it is stored in the attribute <SkyCalc>.last_skycalc_response.
+
+        Parameters
+        ----------
+        return_type : str
+            ["table", "array", "synphot", "fits"]
+        filename : str, optional
+            Default None. If not None, the returned fits.HDUList object is
+            saved to disk under this path.
+
+        Returns
+        -------
+        Based on the return type, the method returns either:
+        - "table": tbl_return (astropy.Table)
+        - "array": wave, trans, flux (3x np.ndarray)
+        - "synphot": trans, flux (SpectralElement, SourceSpectrum,)
+        - "fits": hdu (HDUList)
+
+        """
 
         from astropy import table
-
-        if filename is None:
-            filename = "skycalc_temp.fits"
 
         if not self.validate_params():
             raise ValueError("Object contains invalid parameters. "
@@ -124,15 +145,15 @@ class SkyCalc:
 
         skm = SkyModel()
         skm.callwith(self.values)
-        skm.write(filename)
+        self.last_skycalc_response = skm.data
+        if filename is not None:
+            skm.write(filename)
 
-        with fits.open(filename) as hdu:
-
-            tbl = table.Table(hdu[1].data)
-            tbl["lam"].unit = u.um
-            for colname in tbl.colnames:
-                if "flux" in colname:
-                    tbl[colname].unit = u.Unit("ph s-1 m-2 um-1 arcsec-2")
+        tbl = table.Table(skm.data[1].data)
+        tbl["lam"].unit = u.um
+        for colname in tbl.colnames:
+            if "flux" in colname:
+                tbl[colname].unit = u.Unit("ph s-1 m-2 um-1 arcsec-2")
 
         date_created = dt.now().strftime('%Y-%m-%dT%H:%M:%S')
         meta_data = {"DESCRIPT": "Sky transmission and emission curves",
@@ -191,7 +212,6 @@ class SkyCalc:
             hdu = fits.HDUList([hdu0, hdu1])
 
             return hdu
-
 
     def update(self, kwargs):
         self.values.update(kwargs)
