@@ -34,12 +34,22 @@ on the ESO SkyCalc server. For references to SkyCalc see `ESO SkyCalc`_,
    GettingStarted
    Reference API <reference/skycalc_ipy>
 
-.. warning:: TL;DR: Upgrade to SkyCalc-ipy v1.2 to fix the PyYaml warning/error
+.. note:: v0.1.3: Updated default values for `wmax`, `wgrid_mode`, `wres`
 
-    SkyCalc-ipy v1.1 is only compatible with versions of PyYaml <=5.4.
+    SkyCalc-ipy now uses a logarithmic wavelength binning with R=1000 over the
+    fully available SkyCalc wavelength range of [0.3, 30] um
+
+    - `wmax`: --> `30000  # [nm]`
+    - `wgrid_mode`: --> `fixed_spectral_resolution`
+    - `wres`: --> `1000  wave/dwave`
+
+
+.. note:: v0.1.2: Upgrade fixes PyYaml warning/error for PyYaml >=6.0
+
+    SkyCalc-ipy v0.1.1 is only compatible with versions of PyYaml <=5.4.
     PyYaml v6+ removed backwards compatibility by forcing the user to pass a
-    Loader object when reading YAML files. SkyCalc-ipy v1.0 and v1.1 does not
-    do this.
+    Loader object when reading YAML files. SkyCalc-ipy v0.1.0 and v0.1.1 does
+    not do this.
 
 
 Installation

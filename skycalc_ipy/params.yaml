@@ -188,14 +188,14 @@ wmin :
   - "[300., 3e4] nm. Minimum wavelength. Must be lesser than wmin"
 
 wmax :
-  - 2000.
+  - 30000.
   - float
   - range
   - [300., 30000.]
   - "[300., 3e4] nm. Maximum wavelength. Must be greater than wmin"
 
 wgrid_mode :
-  - fixed_wavelength_step
+  - fixed_spectral_resolution
   - str
   - choice
   - ['fixed_spectral_resolution','fixed_wavelength_step']
@@ -209,7 +209,7 @@ wdelta :
   - "[0., 3e5] nm. wavelength sampling step dlam"
 
 wres :
-  - 20000.
+  - 1000.
   - float
   - range
   - [0., 1000000.]
