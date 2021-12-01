@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+#!/usr/bin/env python3
 # Learn more: https://github.com/kennethreitz/setup.py
 """
 Skycalc_ipy - a python wrapper for the ESO skycalc server
@@ -34,18 +35,21 @@ with open('README.md') as f:
 with open('LICENCE') as f:
     __license__ = f.read()
 
-
-setup(
-    name='skycalc-ipy',
-    version=__version__,
-    description='Get atmospheric spectral information from the ESO skycalc server',
-    long_description_content_type="text/markdown",
-    long_description=__readme__,
-    author='Kieran Leschinski',
-    author_email='kieran.leschinski@univie.ac.at',
-    url='https://github.com/AstarVienna/skycalc_ipy',
-    license=__license__,
-    include_package_data=True,
-    packages=find_packages(exclude=('tests', 'docs')),
-    install_requires=['requests', 'pyyaml', 'numpy', 'astropy']
+def setup_package():
+    setup(
+        name='skycalc_ipy',
+        version=__version__,
+        description='Get atmospheric spectral information from the ESO skycalc server',
+        long_description_content_type="text/markdown",
+        long_description=__readme__,
+        author='Kieran Leschinski',
+        author_email='kieran.leschinski@univie.ac.at',
+        url='https://github.com/AstarVienna/skycalc_ipy',
+        license=__license__,
+        include_package_data=True,
+        packages=find_packages(exclude=('tests', 'docs')),
+        install_requires=['requests', 'pyyaml', 'numpy', 'astropy']
     )
+
+if __name__ == '__main__':
+    setup_package()
