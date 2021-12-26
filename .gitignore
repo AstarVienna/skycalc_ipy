@@ -33,3 +33,4 @@ ENV/
 not-included/
 dist/
 *.fits
+build/
