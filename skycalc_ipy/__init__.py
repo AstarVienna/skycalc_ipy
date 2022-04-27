@@ -6,3 +6,12 @@ from . import ui
 from . import core
 
 from .ui import SkyCalc
+
+################################################################################
+#                          VERSION INFORMATION                                 #
+################################################################################
+
+try:
+    from .version import version as __version__
+except ImportError:
+    __version__ = "Version number is not available"
