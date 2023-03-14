@@ -35,13 +35,15 @@ class AlmanacQuery:
 
     """
 
+    REQUEST_TIMEOUT = 1  # Time limit (in seconds) for server response
+
     def __init__(self, indic):
 
         if hasattr(indic, "defaults"):
             indic = indic.values
 
         self.almdata = None
-        self.almserver = 'http://etimecalret-001.eso.org'
+        self.almserver = 'https://etimecalret-001.eso.org'
         self.almurl = '/observing/etc/api/skycalc_almanac'
 
         # Left: users keyword (skycalc_cli),
@@ -131,7 +133,7 @@ class AlmanacQuery:
 
         rawdata = None
         try:
-            response = requests.post(url, json.dumps(self.almindic))
+            response = requests.post(url, json.dumps(self.almindic), timeout=self.REQUEST_TIMEOUT)
             rawdata = response.text
         except requests.exceptions.RequestException as e:
             print('Error: Almanac query failed.')
@@ -190,11 +192,13 @@ class SkyModel:
 
     """
 
+    REQUEST_TIMEOUT = 1  # Time limit (in seconds) for server response
+
     def __init__(self):
 
         self.stop_on_errors_and_exceptions = True
         self.data = None
-        self.server = 'http://etimecalret-001.eso.org'
+        self.server = 'https://etimecalret-001.eso.org'
         self.url = self.server + '/observing/etc/api/skycalc'
         self.deleter_script_url = self.server + '/observing/etc/api/rmtmp'
         self.bugreport_text = ''
@@ -377,7 +381,7 @@ class SkyModel:
 
     def delete_server_tmpdir(self, tmpdir):
         try:
-            response = requests.get(self.deleter_script_url + '?d=' + tmpdir)
+            response = requests.get(self.deleter_script_url + '?d=' + tmpdir, timeout=self.REQUEST_TIMEOUT)
             deleter_response = response.text.strip()
             if(deleter_response != 'ok'):
                 self.handle_error('Could not delete server tmpdir ' + tmpdir)
@@ -394,7 +398,7 @@ class SkyModel:
             self.fixObservatory()
 
         try:
-            response = requests.post(self.url, data=json.dumps(self.params))
+            response = requests.post(self.url, data=json.dumps(self.params), timeout=self.REQUEST_TIMEOUT)
         except requests.exceptions.RequestException as e:
             self.handle_exception(
                 e, 'Exception raised trying to POST request ' + self.url)
