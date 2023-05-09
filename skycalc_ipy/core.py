@@ -457,33 +457,5 @@ class SkyModel:
         for k in p:
             print(k, p[k])
 
-    def test(self, label, overwite_params):
-        from cStringIO import StringIO
-
-        # capture stdout for a while
-        old_stdout = sys.stdout
-        sys.stdout = mystdout = StringIO()
-
-        sm = SkyModel()
-        str_params = ''
-        # replace all matching keywords with the values in the newdict
-        for key, val in overwite_params.items():
-            if key in sm.params:
-                sm.params[key] = val
-                str_params = str_params + str(key) + ' : ' + str(val) + ', '
-        status = sm.call(True)  # set True for test
-
-        # restore original stdout
-        sys.stdout = old_stdout
-        toprint = label + '\t'
-        # print str_params
-        if(status == 'success'):
-            toprint += bcolors.OKGREEN + ' *** pass *** ' + bcolors.ENDC
-        else:
-            toprint += bcolors.FAIL + ' *** fail *** ' + bcolors.ENDC
-        print(toprint)
-
-        print(mystdout.getvalue())
-
     def reset(self):
         self.__init__()
