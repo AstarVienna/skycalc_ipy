@@ -1,8 +1,0 @@
-pytest
-numpy>=1.16
-astropy
-synphot
-wget
-requests
-matplotlib
-pyyaml

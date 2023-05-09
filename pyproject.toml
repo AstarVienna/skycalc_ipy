@@ -1,0 +1,58 @@
+[project]
+name = "skycalc_ipy"
+version = "0.1.4-alpha"
+# When updating the version, also
+# - update the date in anisocado/version.py
+# - update the release notese in docs/source/index.rst
+description = "Get atmospheric spectral information from the ESO skycalc server"
+readme = "README.md"
+requires-python = ">=3.8"
+# When updating the version, also update the versions in .github/workflows/*
+license = {text = "License :: OSI Approved :: GNU General Public License v3 (GPLv3)"}
+authors = [
+    {name = "Kieran Leschinski", email="kieran.leschinski@unive.ac.at"},
+]
+maintainers = [
+    {name = "Kieran Leschinski", email="kieran.leschinski@unive.ac.at"},
+    {name = "Hugo Buddelmeijer", email="hugo@buddelmeijer.nl"},
+]
+classifiers=[
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Operating System :: OS Independent",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Astronomy",
+]
+dependencies = [
+    # Try to keep the dependencies on lower versions that have a wheel
+    # package on PyPI, for minimumdependencies.yml
+    "numpy>=1.18.0",
+    "astropy>=4.0",
+    "requests>=2.20",
+    "pyyaml>5.2"
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest>=5.0.0",
+    "pytest-cov",
+    # TODO: Should synphot be a normal dependency?
+    "synphot>=1.1.0",
+    "matplotlib>=3.2.0",
+]
+docs = [
+    "sphinx>=4.3.0",
+    "sphinx-rtd-theme>=0.5.1",
+    "jupyter_sphinx==0.2.3",
+    "sphinxcontrib-apidoc",
+    "nbsphinx",
+    "numpydoc",
+]
+
+[project.urls]
+"Homepage" = "https://skycalc-ipy.readthedocs.io/en/latest/"
+"Source" = "https://github.com/AstarVienna/skycalc_ipy"
+"Bug Reports" = "https://github.com/AstarVienna/skycalc_ipy/issues"
+
+[tool.setuptools]
+packages = ["skycalc_ipy"]

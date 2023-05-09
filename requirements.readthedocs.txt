@@ -1,9 +1,0 @@
-numpy
-astropy
-synphot
-requests
-matplotlib
-pyyaml
-sphinxcontrib-apidoc
-numpydoc
-sphinx
