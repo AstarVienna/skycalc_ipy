@@ -402,6 +402,8 @@ class SkyModel:
         except requests.exceptions.RequestException as e:
             self.handle_exception(
                 e, 'Exception raised trying to POST request ' + self.url)
+            return
+
         try:
             res = json.loads(response.text)
             status = res['status']
@@ -409,6 +411,7 @@ class SkyModel:
         except (KeyError, ValueError) as e:
             self.handle_exception(
                 e, 'Exception raised trying to decode server response ')
+            return
 
         tmpurl = self.server + '/observing/etc/tmp/' + \
             tmpdir + '/skytable.fits'
