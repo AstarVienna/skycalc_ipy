@@ -163,17 +163,6 @@ class AlmanacQuery:
         return almdata
 
 
-class bcolors:
-    HEADER = '\033[95m'
-    OKBLUE = '\033[94m'
-    OKGREEN = '\033[92m'
-    WARNING = '\033[93m'
-    FAIL = '\033[91m'
-    ENDC = '\033[0m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
-
-
 class SkyModel:
     """
     Class for querying the Advanced SkyModel at ESO
@@ -296,7 +285,7 @@ class SkyModel:
             'observatory': 'paranal'    # paranal
         }
 
-    def fixObservatory(self):
+    def fix_observatory(self):
         """
         Converts the human readable observatory name into its ESO ID number
 
@@ -325,7 +314,7 @@ class SkyModel:
     def __setitem__(self, key, value):
         self.params[key] = value
         if key == "observatory":
-            self.fixObservatory()
+            self.fix_observatory()
 
     def handle_exception(self, e, msg):
         print(msg)
@@ -335,7 +324,7 @@ class SkyModel:
             sys.exit()
 
     # handle the kind of errors we issue ourselves.
-    def handle_error(self, msg, stop=True):
+    def handle_error(self, msg):
         print(msg)
         print(self.bugreport_text)
         if self.stop_on_errors_and_exceptions:
@@ -391,7 +380,7 @@ class SkyModel:
 
         if self.params["observatory"] in \
                 ["paranal", "lasilla", "armazones", "3060m", "5000m"]:
-            self.fixObservatory()
+            self.fix_observatory()
 
         try:
             response = requests.post(self.url, data=json.dumps(self.params), timeout=self.REQUEST_TIMEOUT)
