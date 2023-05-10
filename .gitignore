@@ -34,3 +34,7 @@ not-included/
 dist/
 *.fits
 build/
+
+# Testing related
+.coverage
+coverage.xml

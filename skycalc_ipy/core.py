@@ -48,16 +48,17 @@ class AlmanacQuery:
 
         # Left: users keyword (skycalc_cli),
         # Right: skycalc Almanac output keywords
-        self.alm_parameters = {}
-        self.alm_parameters['airmass'] = 'target_airmass'
-        self.alm_parameters['msolflux'] = 'sun_aveflux'
-        self.alm_parameters['moon_sun_sep'] = 'moon_sun_sep'
-        self.alm_parameters['moon_target_sep'] = 'moon_target_sep'
-        self.alm_parameters['moon_alt'] = 'moon_alt'
-        self.alm_parameters['moon_earth_dist'] = 'moon_earth_dist'
-        self.alm_parameters['ecl_lon'] = 'ecl_lon'
-        self.alm_parameters['ecl_lat'] = 'ecl_lat'
-        self.alm_parameters['observatory'] = 'observatory'
+        self.alm_parameters = {
+            'airmass': 'target_airmass',
+            'msolflux': 'sun_aveflux',
+            'moon_sun_sep': 'moon_sun_sep',
+            'moon_target_sep': 'moon_target_sep',
+            'moon_alt': 'moon_alt',
+            'moon_earth_dist': 'moon_earth_dist',
+            'ecl_lon': 'ecl_lon',
+            'ecl_lat': 'ecl_lat',
+            'observatory': 'observatory',
+        }
 
         self.almindic = {}
         # The Almanac needs:
@@ -71,7 +72,6 @@ class AlmanacQuery:
         # coord_ut_hour : int
         # coord_ut_min  : int
         # coord_ut_sec  : float
-
 
         if 'date' in indic and indic["date"] is not None:
 
@@ -99,7 +99,6 @@ class AlmanacQuery:
         if 'ra' not in indic or 'dec' not in indic:
             raise ValueError('ra/dec coordinate not given for the Almanac.')
 
-        ra = None
         try:
             ra = float(indic['ra'])
         except ValueError:
@@ -107,7 +106,6 @@ class AlmanacQuery:
             raise
         self.almindic['coord_ra'] = ra
 
-        dec = None
         try:
             dec = float(indic['dec'])
         except ValueError:
@@ -131,16 +129,14 @@ class AlmanacQuery:
 
         url = self.almserver + self.almurl
 
-        rawdata = None
         try:
             response = requests.post(url, json.dumps(self.almindic), timeout=self.REQUEST_TIMEOUT)
             rawdata = response.text
-        except requests.exceptions.RequestException as e:
+        except requests.exceptions.RequestException:
             print('Error: Almanac query failed.')
             raise
 
         # Process rawdata
-        jsondata = None
         try:
             jsondata = json.loads(rawdata)
             jsondata = jsondata['output']
@@ -151,7 +147,6 @@ class AlmanacQuery:
         # Find the relevant (key, value)
         almdata = {}
         for key, value in self.alm_parameters.items():
-            subsection = 'nothing'
             prefix = value.split('_')[0]
             if prefix == 'sun' or prefix == 'moon' or prefix == 'target':
                 subsection = prefix
@@ -167,16 +162,6 @@ class AlmanacQuery:
 
         return almdata
 
-class bcolors:
-    HEADER = '\033[95m'
-    OKBLUE = '\033[94m'
-    OKGREEN = '\033[92m'
-    WARNING = '\033[93m'
-    FAIL = '\033[91m'
-    ENDC = '\033[0m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
-
 
 class SkyModel:
     """
@@ -188,7 +173,7 @@ class SkyModel:
     can be read with the :meth:`.write` method.
 
     Parameter and their default values and comments can be found at:
-    http://www.eso.org/observing/etc/bin/gen/form?INS.MODE=swspectr+INS.NAME=SKYCALC
+    https://www.eso.org/observing/etc/bin/gen/form?INS.MODE=swspectr+INS.NAME=SKYCALC
 
     """
 
@@ -300,7 +285,7 @@ class SkyModel:
             'observatory': 'paranal'    # paranal
         }
 
-    def fixObservatory(self):
+    def fix_observatory(self):
         """
         Converts the human readable observatory name into its ESO ID number
 
@@ -329,7 +314,7 @@ class SkyModel:
     def __setitem__(self, key, value):
         self.params[key] = value
         if key == "observatory":
-            self.fixObservatory()
+            self.fix_observatory()
 
     def handle_exception(self, e, msg):
         print(msg)
@@ -339,7 +324,7 @@ class SkyModel:
             sys.exit()
 
     # handle the kind of errors we issue ourselves.
-    def handle_error(self, msg, stop=True):
+    def handle_error(self, msg):
         print(msg)
         print(self.bugreport_text)
         if self.stop_on_errors_and_exceptions:
@@ -383,7 +368,7 @@ class SkyModel:
         try:
             response = requests.get(self.deleter_script_url + '?d=' + tmpdir, timeout=self.REQUEST_TIMEOUT)
             deleter_response = response.text.strip()
-            if(deleter_response != 'ok'):
+            if deleter_response != 'ok':
                 self.handle_error('Could not delete server tmpdir ' + tmpdir)
         except requests.exceptions.RequestException as e:
             self.handle_exception(
@@ -395,13 +380,15 @@ class SkyModel:
 
         if self.params["observatory"] in \
                 ["paranal", "lasilla", "armazones", "3060m", "5000m"]:
-            self.fixObservatory()
+            self.fix_observatory()
 
         try:
             response = requests.post(self.url, data=json.dumps(self.params), timeout=self.REQUEST_TIMEOUT)
         except requests.exceptions.RequestException as e:
             self.handle_exception(
                 e, 'Exception raised trying to POST request ' + self.url)
+            return
+
         try:
             res = json.loads(response.text)
             status = res['status']
@@ -409,11 +396,12 @@ class SkyModel:
         except (KeyError, ValueError) as e:
             self.handle_exception(
                 e, 'Exception raised trying to decode server response ')
+            return
 
         tmpurl = self.server + '/observing/etc/tmp/' + \
             tmpdir + '/skytable.fits'
 
-        if(status == 'success'):
+        if status == 'success':
             try:
                 # retrive and save FITS data (in memory)
                 self.retrieve_data(tmpurl)
@@ -427,7 +415,7 @@ class SkyModel:
             self.handle_error('parameter validation error: ' +
                               res['error'])
 
-        if(test):
+        if test:
             # print 'call() returning status:',status
             return status
 
@@ -456,34 +444,6 @@ class SkyModel:
             p = dict((k, self.params[k]) for k in keys if k in self.params)
         for k in p:
             print(k, p[k])
-
-    def test(self, label, overwite_params):
-        from cStringIO import StringIO
-
-        # capture stdout for a while
-        old_stdout = sys.stdout
-        sys.stdout = mystdout = StringIO()
-
-        sm = SkyModel()
-        str_params = ''
-        # replace all matching keywords with the values in the newdict
-        for key, val in overwite_params.items():
-            if key in sm.params:
-                sm.params[key] = val
-                str_params = str_params + str(key) + ' : ' + str(val) + ', '
-        status = sm.call(True)  # set True for test
-
-        # restore original stdout
-        sys.stdout = old_stdout
-        toprint = label + '\t'
-        # print str_params
-        if(status == 'success'):
-            toprint += bcolors.OKGREEN + ' *** pass *** ' + bcolors.ENDC
-        else:
-            toprint += bcolors.FAIL + ' *** fail *** ' + bcolors.ENDC
-        print(toprint)
-
-        print(mystdout.getvalue())
 
     def reset(self):
         self.__init__()
