@@ -7,14 +7,13 @@ from astropy.io import fits
 import synphot as sp
 
 # Mocks
-skp  = ui.SkyCalc()
+skp = ui.SkyCalc()
 skp2 = ui.SkyCalc()
 skp_small = ui.SkyCalc()
 skp_small["wdelta"] = 100
 
 
 class TestLoadYaml:
-
     def test_finds_file_for_specified_path(self):
         dirname = os.path.dirname(inspect.getfile(inspect.currentframe()))
         yaml_dict = ui.load_yaml(os.path.join(dirname, "../params.yaml"))
@@ -48,8 +47,11 @@ class TestSkycalcParamsInit:
     def test_print_comments_mutliple_keywords(self, capsys):
         skp.print_comments(["airmass", "season"])
         output = capsys.readouterr()[0].strip()
-        assert output == "airmass : airmass in range [1.0, 3.0]\n" + \
-                         "season : 0=all year, 1=dec/jan,2=feb/mar..."
+        assert (
+            output
+            == "airmass : airmass in range [1.0, 3.0]\n"
+            + "season : 0=all year, 1=dec/jan,2=feb/mar..."
+        )
 
     def test_print_comments_misspelled_keyword(self, capsys):
         skp.print_comments(["iarmass"])
@@ -63,7 +65,6 @@ class TestSkycalcParamsInit:
 
 
 class TestSkycalcParamsValidateMethod(object):
-
     def test_returns_true_for_all_good(self):
         assert skp.validate_params() is True
 
@@ -80,12 +81,11 @@ class TestSkycalcParamsValidateMethod(object):
         assert skp.validate_params() is False
 
     def test_returns_false_for_value_below_zero(self):
-        skp["lsf_boxcar_fwhm"] = -5.
+        skp["lsf_boxcar_fwhm"] = -5.0
         assert skp.validate_params() is False
 
 
 class TestSkyCalcParamsGetSkySpectrum:
-
     def test_returns_data_with_valid_parameters(self):
         tbl = skp_small.get_sky_spectrum()
         assert "lam" in tbl.colnames
@@ -120,26 +120,25 @@ class TestSkyCalcParamsGetSkySpectrum:
     def test_returns_two_synphot_objects_for_return_type_synphot(self):
         trans, flux = skp_small.get_sky_spectrum(return_type="synphot")
         assert isinstance(trans, sp.SpectralElement)
-        assert isinstance(flux,  sp.SourceSpectrum)
+        assert isinstance(flux, sp.SourceSpectrum)
 
     def test_returns_nothing_if_return_type_is_invalid(self):
         pass
 
 
 class TestSkyCalcParamsGetAlmanacData:
-
     def test_return_updated_SkyCalcParams_values_dict_when_flag_true(self):
-        out_dict = skp.get_almanac_data(ra=180, dec=0, mjd=50000,
-                                        observatory="lasilla",
-                                        update_values=True)
+        out_dict = skp.get_almanac_data(
+            ra=180, dec=0, mjd=50000, observatory="lasilla", update_values=True
+        )
         assert out_dict["observatory"] == "lasilla"
         assert skp["observatory"] == "lasilla"
 
     def test_return_only_almanac_data_when_update_flag_false(self):
         skp2["observatory"] == "paranal"
-        out_dict = skp.get_almanac_data(ra=180, dec=0, mjd=50000,
-                                        observatory="lasilla",
-                                        update_values=False)
+        out_dict = skp.get_almanac_data(
+            ra=180, dec=0, mjd=50000, observatory="lasilla", update_values=False
+        )
         assert out_dict["observatory"] == "lasilla"
         assert skp2["observatory"] == "paranal"
 
@@ -149,7 +148,6 @@ class TestSkyCalcParamsGetAlmanacData:
 
 
 class TestFunctionGetAlmanacData:
-
     def test_throws_exception_for_invalid_ra(self):
         with raises(ValueError):
             ui.get_almanac_data(ra=-10, dec=0, mjd=50000)
@@ -167,31 +165,33 @@ class TestFunctionGetAlmanacData:
             ui.get_almanac_data(ra=180, dec=0, date="2000-0-0T0:0:0")
 
     def test_return_data_for_valid_parameters(self):
-        out_dict = ui.get_almanac_data(ra=180, dec=0, date="2000-1-1T0:0:0",
-                                       observatory="lasilla")
+        out_dict = ui.get_almanac_data(
+            ra=180, dec=0, date="2000-1-1T0:0:0", observatory="lasilla"
+        )
         assert type(out_dict) == dict
         assert len(out_dict) == 9
         assert out_dict["observatory"] == "lasilla"
 
     def test_return_full_dict_when_flag_true(self):
-        out_dict = ui.get_almanac_data(ra=180, dec=0, date="2000-1-1T0:0:0",
-                                       return_full_dict=True)
+        out_dict = ui.get_almanac_data(
+            ra=180, dec=0, date="2000-1-1T0:0:0", return_full_dict=True
+        )
         assert type(out_dict) == dict
         assert len(out_dict) == 39
         assert type(out_dict["moon_sun_sep"]) == float
 
-
     def test_return_only_almanac_dict_when_flag_false(self):
-        out_dict = ui.get_almanac_data(ra=180, dec=0, date="2000-1-1T0:0:0",
-                                       return_full_dict=False)
+        out_dict = ui.get_almanac_data(
+            ra=180, dec=0, date="2000-1-1T0:0:0", return_full_dict=False
+        )
         assert type(out_dict) == dict
         assert len(out_dict) == 9
 
     def test_take_date_only_if_date_and_mjd_are_valid(self, capsys):
-        out_dict_date = ui.get_almanac_data(ra=180, dec=0,
-                                             date="2000-1-1T0:0:0")
-        out_dict_both = ui.get_almanac_data(ra=180, dec=0, mjd=50000,
-                                             date="2000-1-1T0:0:0")
+        out_dict_date = ui.get_almanac_data(ra=180, dec=0, date="2000-1-1T0:0:0")
+        out_dict_both = ui.get_almanac_data(
+            ra=180, dec=0, mjd=50000, date="2000-1-1T0:0:0"
+        )
         output = capsys.readouterr()[0].strip()
         assert output == "Warning: Both date and mjd are set. Using date"
         assert out_dict_both == out_dict_date
@@ -200,10 +200,12 @@ class TestFunctionGetAlmanacData:
 class TestDocExamples:
     def test_example(self):
         skycalc = ui.SkyCalc()
-        skycalc.get_almanac_data(ra=83.8221, dec=-5.3911,
-                                 date="2017-12-24T04:00:00", update_values=True)
+        skycalc.get_almanac_data(
+            ra=83.8221, dec=-5.3911, date="2017-12-24T04:00:00", update_values=True
+        )
         tbl = skycalc.get_sky_spectrum()
         assert len(tbl) == 4606
+
 
 #
 # class TestFunctionFixObservatory:
