@@ -38,3 +38,11 @@ build/
 # Testing related
 .coverage
 coverage.xml
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+
+# Pylint
+.pylint.d/
