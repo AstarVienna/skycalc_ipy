@@ -6,9 +6,13 @@ Credit for ``skycalc_cli`` goes to ESO
 """
 
 from __future__ import print_function
+
+import hashlib
 import sys
 import json
 from datetime import datetime
+from pathlib import Path
+
 import requests
 
 from astropy.io import fits
@@ -382,6 +386,13 @@ class SkyModel:
                 e, "Exception raised trying to delete tmp dir " + tmpdir
             )
 
+    def key_from_params(self):
+        """Convert the parameters to a key to cache the data."""
+        # Three underscores between the key-value pairs, two underscores
+        # between the key and the value.
+        astring = "skycalc_" + "___".join(f"{k}__{v}" for k, v in self.params.items())
+        return hashlib.sha256(astring.encode("utf-8")).hexdigest()
+
     def call(self, test=False):
         # print 'self.url=',self.url
         # print 'self.params=',self.params
@@ -394,6 +405,11 @@ class SkyModel:
             "5000m",
         ]:
             self.fix_observatory()
+
+        fn_local = Path(__file__).parent / "data" / f"{self.key_from_params()}.fits"
+        if fn_local.exists():
+            self.data = fits.open(fn_local)
+            return
 
         try:
             response = requests.post(
@@ -423,6 +439,12 @@ class SkyModel:
                 self.retrieve_data(tmpurl)
             except requests.exceptions.RequestException as e:
                 self.handle_exception(e, "could not retrieve FITS data from server")
+
+            try:
+                self.data.writeto(fn_local)
+            except PermissionError:
+                # Apparently it is not possible to save here.
+                pass
 
             self.delete_server_tmpdir(tmpdir)
 
