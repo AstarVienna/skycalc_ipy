@@ -117,6 +117,13 @@ class AlmanacQuery:
         if "observatory" in indic:
             self.almindic["observatory"] = indic["observatory"]
 
+    def key_from_params(self):
+        """Convert the parameters to a key to cache the data."""
+        # Three underscores between the key-value pairs, two underscores
+        # between the key and the value.
+        astring = "skycalc_" + "___".join(f"{k}__{v}" for k, v in self.almindic.items())
+        return hashlib.sha256(astring.encode("utf-8")).hexdigest()
+
     def query(self):
         """
         Queries the ESO Skycalc server with the parameters in self.almindic
@@ -127,17 +134,27 @@ class AlmanacQuery:
             Dictionary with the relevant parameters for the date given
 
         """
+        fn_local = Path(__file__).parent / "data" / f"{self.key_from_params()}.json"
+        if fn_local.exists():
+            rawdata = open(fn_local).read()
+        else:
+            url = self.almserver + self.almurl
 
-        url = self.almserver + self.almurl
+            try:
+                response = requests.post(
+                    url, json.dumps(self.almindic), timeout=self.REQUEST_TIMEOUT
+                )
+                rawdata = response.text
+            except requests.exceptions.RequestException:
+                print("Error: Almanac query failed.")
+                raise
 
-        try:
-            response = requests.post(
-                url, json.dumps(self.almindic), timeout=self.REQUEST_TIMEOUT
-            )
-            rawdata = response.text
-        except requests.exceptions.RequestException:
-            print("Error: Almanac query failed.")
-            raise
+            try:
+                with open(fn_local, 'w') as fl:
+                    fl.write(rawdata)
+            except PermissionError:
+                # Apparently it is not possible to save here.
+                pass
 
         # Process rawdata
         try:
