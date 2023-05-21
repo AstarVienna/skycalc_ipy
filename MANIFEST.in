@@ -1,2 +1,3 @@
 include LICENCE
 include skycalc_ipy/*.yaml
+include skycalc_ipy/data/*.fits
