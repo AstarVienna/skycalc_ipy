@@ -147,7 +147,7 @@ class AlmanacQuery:
         almdata = {}
         for key, value in self.alm_parameters.items():
             prefix = value.split("_")[0]
-            if prefix == "sun" or prefix == "moon" or prefix == "target":
+            if prefix in {"sun", "moon", "target"}:
                 subsection = prefix
             elif prefix == "ecl":
                 subsection = "target"
@@ -379,13 +379,13 @@ class SkyModel:
         # print 'self.url=',self.url
         # print 'self.params=',self.params
 
-        if self.params["observatory"] in [
+        if self.params["observatory"] in {
             "paranal",
             "lasilla",
             "armazones",
             "3060m",
             "5000m",
-        ]:
+        }:
             self.fix_observatory()
 
         try:
