@@ -156,13 +156,8 @@ class AlmanacQuery:
             try:
                 almdata[key] = jsondata[subsection][value]
             except (KeyError, ValueError):
-                print(
-                    'Warning: key "'
-                    + subsection
-                    + "/"
-                    + value
-                    + '" not found in the Almanac response.'
-                )
+                print(f"Warning: key \"{subsection}/{value}\" not found in the"
+                      " Almanac response.")
 
         return almdata
 
@@ -303,7 +298,7 @@ class SkyModel:
             self.params["observatory"] = "5000"
         else:
             raise ValueError(
-                "Wrong Observatory name, please refer to the " "documentation."
+                "Wrong Observatory name, please refer to the documentation."
             )
 
     def __getitem__(self, item):
