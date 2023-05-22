@@ -48,10 +48,9 @@ class SkyCalc:
 
         for pname in param_names:
             if pname not in self.comments:
-                msg = pname + " not found"
-                print(msg)
+                print(f"{pname} not found")
             else:
-                print("{} : {}".format(pname, self.comments[pname]))
+                print(f"{pname} : {self.comments[pname]}")
 
     def validate_params(self):
         valid = True
@@ -89,7 +88,7 @@ class SkyCalc:
             print("See <SkyCalc>.comments[<key>] for help")
             print("The following entries are invalid:")
             for key in invalid_keys:
-                print("'{}' : {} :".format(key, self.values[key]), self.comments[key])
+                print(f"'{key}' : {self.values[key]} :", self.comments[key])
 
         return valid
 
@@ -137,7 +136,7 @@ class SkyCalc:
         from astropy import table
 
         if not self.validate_params():
-            raise ValueError("Object contains invalid parameters. " "Not calling ESO")
+            raise ValueError("Object contains invalid parameters. Not calling ESO")
 
         skm = SkyModel()
         skm.callwith(self.values)
