@@ -43,7 +43,7 @@ class SkyCalc:
         if param_names is None:
             param_names = list(self.comments.keys())
 
-        if type(param_names) is str:
+        if isinstance(param_names, str):
             param_names = [param_names]
 
         for pname in param_names:
