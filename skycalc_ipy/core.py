@@ -38,26 +38,25 @@ class AlmanacQuery:
     REQUEST_TIMEOUT = 2  # Time limit (in seconds) for server response
 
     def __init__(self, indic):
-
         if hasattr(indic, "defaults"):
             indic = indic.values
 
         self.almdata = None
-        self.almserver = 'https://etimecalret-001.eso.org'
-        self.almurl = '/observing/etc/api/skycalc_almanac'
+        self.almserver = "https://etimecalret-001.eso.org"
+        self.almurl = "/observing/etc/api/skycalc_almanac"
 
         # Left: users keyword (skycalc_cli),
         # Right: skycalc Almanac output keywords
         self.alm_parameters = {
-            'airmass': 'target_airmass',
-            'msolflux': 'sun_aveflux',
-            'moon_sun_sep': 'moon_sun_sep',
-            'moon_target_sep': 'moon_target_sep',
-            'moon_alt': 'moon_alt',
-            'moon_earth_dist': 'moon_earth_dist',
-            'ecl_lon': 'ecl_lon',
-            'ecl_lat': 'ecl_lat',
-            'observatory': 'observatory',
+            "airmass": "target_airmass",
+            "msolflux": "sun_aveflux",
+            "moon_sun_sep": "moon_sun_sep",
+            "moon_target_sep": "moon_target_sep",
+            "moon_alt": "moon_alt",
+            "moon_earth_dist": "moon_earth_dist",
+            "ecl_lon": "ecl_lon",
+            "ecl_lat": "ecl_lat",
+            "observatory": "observatory",
         }
 
         self.almindic = {}
@@ -73,48 +72,46 @@ class AlmanacQuery:
         # coord_ut_min  : int
         # coord_ut_sec  : float
 
-        if 'date' in indic and indic["date"] is not None:
-
-            if isinstance(indic['date'], str):
-                isotime = datetime.strptime(indic['date'],
-                                            '%Y-%m-%dT%H:%M:%S')
+        if "date" in indic and indic["date"] is not None:
+            if isinstance(indic["date"], str):
+                isotime = datetime.strptime(indic["date"], "%Y-%m-%dT%H:%M:%S")
             else:
-                isotime = indic['date']
+                isotime = indic["date"]
 
-            self.almindic['input_type'] = 'ut_time'
-            self.almindic['coord_year'] = isotime.year
-            self.almindic['coord_month'] = isotime.month
-            self.almindic['coord_day'] = isotime.day
-            self.almindic['coord_ut_hour'] = isotime.hour
-            self.almindic['coord_ut_min'] = isotime.minute
-            self.almindic['coord_ut_sec'] = isotime.second
+            self.almindic["input_type"] = "ut_time"
+            self.almindic["coord_year"] = isotime.year
+            self.almindic["coord_month"] = isotime.month
+            self.almindic["coord_day"] = isotime.day
+            self.almindic["coord_ut_hour"] = isotime.hour
+            self.almindic["coord_ut_min"] = isotime.minute
+            self.almindic["coord_ut_sec"] = isotime.second
 
-        elif 'mjd' in indic and indic["mjd"] is not None:
-            self.almindic['input_type'] = 'mjd'
-            self.almindic['mjd'] = float(indic["mjd"])
+        elif "mjd" in indic and indic["mjd"] is not None:
+            self.almindic["input_type"] = "mjd"
+            self.almindic["mjd"] = float(indic["mjd"])
 
         else:
-            raise ValueError('No valid date or mjd given for the Almanac')
+            raise ValueError("No valid date or mjd given for the Almanac")
 
-        if 'ra' not in indic or 'dec' not in indic:
-            raise ValueError('ra/dec coordinate not given for the Almanac.')
-
-        try:
-            ra = float(indic['ra'])
-        except ValueError:
-            print('Error: wrong ra format for the Almanac.')
-            raise
-        self.almindic['coord_ra'] = ra
+        if "ra" not in indic or "dec" not in indic:
+            raise ValueError("ra/dec coordinate not given for the Almanac.")
 
         try:
-            dec = float(indic['dec'])
+            ra = float(indic["ra"])
         except ValueError:
-            print('Error: wrong dec format for the Almanac.')
+            print("Error: wrong ra format for the Almanac.")
             raise
-        self.almindic['coord_dec'] = dec
+        self.almindic["coord_ra"] = ra
 
-        if 'observatory' in indic:
-            self.almindic['observatory'] = indic['observatory']
+        try:
+            dec = float(indic["dec"])
+        except ValueError:
+            print("Error: wrong dec format for the Almanac.")
+            raise
+        self.almindic["coord_dec"] = dec
+
+        if "observatory" in indic:
+            self.almindic["observatory"] = indic["observatory"]
 
     def query(self):
         """
@@ -130,35 +127,42 @@ class AlmanacQuery:
         url = self.almserver + self.almurl
 
         try:
-            response = requests.post(url, json.dumps(self.almindic), timeout=self.REQUEST_TIMEOUT)
+            response = requests.post(
+                url, json.dumps(self.almindic), timeout=self.REQUEST_TIMEOUT
+            )
             rawdata = response.text
         except requests.exceptions.RequestException:
-            print('Error: Almanac query failed.')
+            print("Error: Almanac query failed.")
             raise
 
         # Process rawdata
         try:
             jsondata = json.loads(rawdata)
-            jsondata = jsondata['output']
+            jsondata = jsondata["output"]
         except (KeyError, ValueError):
-            print('Error: invalid Almanac response.')
+            print("Error: invalid Almanac response.")
             raise
 
         # Find the relevant (key, value)
         almdata = {}
         for key, value in self.alm_parameters.items():
-            prefix = value.split('_')[0]
-            if prefix == 'sun' or prefix == 'moon' or prefix == 'target':
+            prefix = value.split("_")[0]
+            if prefix == "sun" or prefix == "moon" or prefix == "target":
                 subsection = prefix
-            elif prefix == 'ecl':
-                subsection = 'target'
+            elif prefix == "ecl":
+                subsection = "target"
             else:
-                subsection = 'observation'
+                subsection = "observation"
             try:
                 almdata[key] = jsondata[subsection][value]
             except (KeyError, ValueError):
-                print('Warning: key "' + subsection + '/' + value +
-                      '" not found in the Almanac response.')
+                print(
+                    'Warning: key "'
+                    + subsection
+                    + "/"
+                    + value
+                    + '" not found in the Almanac response.'
+                )
 
         return almdata
 
@@ -180,74 +184,65 @@ class SkyModel:
     REQUEST_TIMEOUT = 2  # Time limit (in seconds) for server response
 
     def __init__(self):
-
         self.stop_on_errors_and_exceptions = True
         self.data = None
-        self.server = 'https://etimecalret-001.eso.org'
-        self.url = self.server + '/observing/etc/api/skycalc'
-        self.deleter_script_url = self.server + '/observing/etc/api/rmtmp'
-        self.bugreport_text = ''
-        self.tmpdir = ''
+        self.server = "https://etimecalret-001.eso.org"
+        self.url = self.server + "/observing/etc/api/skycalc"
+        self.deleter_script_url = self.server + "/observing/etc/api/rmtmp"
+        self.bugreport_text = ""
+        self.tmpdir = ""
         self.params = {
             # Airmass. Alt and airmass are coupled through the plane parallel
             # approximation airmass=sec(z), z being the zenith distance
             # z=90-Alt
-            'airmass': 1.0,    # float range [1.0,3.0]
-
+            "airmass": 1.0,  # float range [1.0,3.0]
             # Season and Period of Night
-            'pwv_mode': 'pwv',  # string  grid ['pwv','season']
+            "pwv_mode": "pwv",  # string  grid ['pwv','season']
             # integer grid [0,1,2,3,4,5,6] (0=all year, 1=dec/jan,2=feb/mar...)
-            'season': 0,
+            "season": 0,
             # third of night integer grid [0,1,2,3] (0=all year, 1,2,3 = third
             # of night)
-            'time': 0,
-
+            "time": 0,
             # Precipitable Water Vapor PWV
             # mm float grid [-1.0,0.5,1.0,1.5,2.5,3.5,5.0,7.5,10.0,20.0]
-            'pwv': 3.5,
-
+            "pwv": 3.5,
             # Monthly Averaged Solar Flux
-            'msolflux': 130.0,  # s.f.u float > 0
-
+            "msolflux": 130.0,  # s.f.u float > 0
             # Scattered Moon Light
             # Moon coordinate constraints: |z - zmoon| <= rho <= |z + zmoon|
             # where rho = moon/target separation, z = 90-target altitude and
             # zmoon = 90-moon altitude.
             # string grid ['Y','N'] flag for inclusion of scattered moonlight.
-            'incl_moon': 'Y',
+            "incl_moon": "Y",
             # degrees float range [0.0,360.0] Separation of Sun and Moon as
             # seen from Earth ("moon phase")
-            'moon_sun_sep': 90.0,
+            "moon_sun_sep": 90.0,
             # degrees float range [0.0,180.0] Moon-Target Separation ( rho )
-            'moon_target_sep': 45.0,
+            "moon_target_sep": 45.0,
             # degrees float range [-90.0,90.0] Moon Altitude over Horizon
-            'moon_alt': 45.0,
+            "moon_alt": 45.0,
             # float range [0.91,1.08] Moon-Earth Distance (mean=1)
-            'moon_earth_dist': 1.0,
-
+            "moon_earth_dist": 1.0,
             # Starlight
             # string  grid ['Y','N'] flag for inclusion of scattered starlight
-            'incl_starlight': 'Y',
-
+            "incl_starlight": "Y",
             # Zodiacal light
             # string grid ['Y','N'] flag for inclusion of zodiacal light
-            'incl_zodiacal': 'Y',
+            "incl_zodiacal": "Y",
             # degrees float range [-180.0,180.0] Heliocentric ecliptic
             # longitude
-            'ecl_lon': 135.0,
+            "ecl_lon": 135.0,
             # degrees float range [-90.0,90.0] Ecliptic latitude
-            'ecl_lat': 90.0,
-
+            "ecl_lat": 90.0,
             # Molecular Emission of Lower Atmosphere
             # string grid ['Y','N'] flag for inclusion of lower atmosphere
-            'incl_loweratm': 'Y',
+            "incl_loweratm": "Y",
             # Emission Lines of Upper Atmosphere
             # string grid ['Y','N'] flag for inclusion of upper stmosphere
-            'incl_upperatm': 'Y',
+            "incl_upperatm": "Y",
             # Airglow Continuum (Residual Continuum)
             # string grid ['Y','N'] flag for inclusion of airglow
-            'incl_airglow': 'Y',
-
+            "incl_airglow": "Y",
             # Instrumental Thermal Emission This radiance component represents
             # an instrumental effect. The emission is provided relative to the
             # other model components. To obtain the correct absolute flux, an
@@ -257,32 +252,30 @@ class SkyModel:
             # The_Cerro_Paranal_Advanced_Sky_Model.pdf
             # string grid ['Y','N'] flag for inclusion of instrumental thermal
             # radiation
-            'incl_therm': 'N',
-            'therm_t1': 0.0,   # K float > 0
-            'therm_e1': 0.0,   # float range [0,1]
-            'therm_t2': 0.0,   # K float > 0
-            'therm_e2': 0.0,   # float range [0,1]
-            'therm_t3': 0.0,   # float > 0
-            'therm_e3': 0.0,   # K float range [0,1]
-
+            "incl_therm": "N",
+            "therm_t1": 0.0,  # K float > 0
+            "therm_e1": 0.0,  # float range [0,1]
+            "therm_t2": 0.0,  # K float > 0
+            "therm_e2": 0.0,  # float range [0,1]
+            "therm_t3": 0.0,  # float > 0
+            "therm_e3": 0.0,  # K float range [0,1]
             # Wavelength Grid
-            'vacair': 'vac',  # vac or air
-            'wmin': 300.0,  # nm float range [300.0,30000.0] < wmax
-            'wmax': 2000.0,  # nm float range [300.0,30000.0] > wmin
+            "vacair": "vac",  # vac or air
+            "wmin": 300.0,  # nm float range [300.0,30000.0] < wmax
+            "wmax": 2000.0,  # nm float range [300.0,30000.0] > wmin
             # string grid ['fixed_spectral_resolution','fixed_wavelength_step']
-            'wgrid_mode': 'fixed_wavelength_step',
+            "wgrid_mode": "fixed_wavelength_step",
             # nm/step float range [0,30000.0] wavelength sampling step dlam
             # (not the res.element)
-            'wdelta': 0.1,
+            "wdelta": 0.1,
             # float range [0,1.0e6] RESOLUTION is misleading, it is rather
             # lam/dlam where dlam is wavelength step (not the res.element)
-            'wres': 20000,
-
+            "wres": 20000,
             # Convolve by Line Spread Function
-            'lsf_type': 'none',   # string grid ['none','Gaussian','Boxcar']
-            'lsf_gauss_fwhm': 5.0,      # wavelength bins float > 0
-            'lsf_boxcar_fwhm': 5.0,     # wavelength bins float > 0
-            'observatory': 'paranal'    # paranal
+            "lsf_type": "none",  # string grid ['none','Gaussian','Boxcar']
+            "lsf_gauss_fwhm": 5.0,  # wavelength bins float > 0
+            "lsf_boxcar_fwhm": 5.0,  # wavelength bins float > 0
+            "observatory": "paranal",  # paranal
         }
 
     def fix_observatory(self):
@@ -294,19 +287,24 @@ class SkyModel:
 
         """
 
-        if self.params['observatory'] == 'lasilla':
-            self.params['observatory'] = '2400'
-        elif self.params['observatory'] == 'paranal':
-            self.params['observatory'] = '2640'
-        elif (self.params['observatory'] == '3060m' or
-              self.params['observatory'] == 'armazones'):
-            self.params['observatory'] = '3060'
-        elif (self.params['observatory'] == '5000m' or
-              self.params['observatory'] == 'highanddry'):
-            self.params['observatory'] = '5000'
+        if self.params["observatory"] == "lasilla":
+            self.params["observatory"] = "2400"
+        elif self.params["observatory"] == "paranal":
+            self.params["observatory"] = "2640"
+        elif (
+            self.params["observatory"] == "3060m"
+            or self.params["observatory"] == "armazones"
+        ):
+            self.params["observatory"] = "3060"
+        elif (
+            self.params["observatory"] == "5000m"
+            or self.params["observatory"] == "highanddry"
+        ):
+            self.params["observatory"] = "5000"
         else:
-            raise ValueError('Wrong Observatory name, please refer to the '
-                             'documentation.')
+            raise ValueError(
+                "Wrong Observatory name, please refer to the " "documentation."
+            )
 
     def __getitem__(self, item):
         return self.params[item]
@@ -335,14 +333,14 @@ class SkyModel:
             self.data = fits.open(url)
         except requests.exceptions.RequestException as e:
             self.handle_exception(
-                e, 'Exception raised trying to get FITS data from ' + url)
+                e, "Exception raised trying to get FITS data from " + url
+            )
 
     def write(self, local_filename, **kwargs):
         try:
             self.data.writeto(local_filename, **kwargs)
         except IOError as e:
-            self.handle_exception(
-                e, 'Exception raised trying to write fits file ')
+            self.handle_exception(e, "Exception raised trying to write fits file ")
 
     # ORIGINAL CODE
     # def retrieve_data(self, url):
@@ -366,54 +364,63 @@ class SkyModel:
 
     def delete_server_tmpdir(self, tmpdir):
         try:
-            response = requests.get(self.deleter_script_url + '?d=' + tmpdir, timeout=self.REQUEST_TIMEOUT)
+            response = requests.get(
+                self.deleter_script_url + "?d=" + tmpdir, timeout=self.REQUEST_TIMEOUT
+            )
             deleter_response = response.text.strip()
-            if deleter_response != 'ok':
-                self.handle_error('Could not delete server tmpdir ' + tmpdir)
+            if deleter_response != "ok":
+                self.handle_error("Could not delete server tmpdir " + tmpdir)
         except requests.exceptions.RequestException as e:
             self.handle_exception(
-                e, 'Exception raised trying to delete tmp dir ' + tmpdir)
+                e, "Exception raised trying to delete tmp dir " + tmpdir
+            )
 
     def call(self, test=False):
         # print 'self.url=',self.url
         # print 'self.params=',self.params
 
-        if self.params["observatory"] in \
-                ["paranal", "lasilla", "armazones", "3060m", "5000m"]:
+        if self.params["observatory"] in [
+            "paranal",
+            "lasilla",
+            "armazones",
+            "3060m",
+            "5000m",
+        ]:
             self.fix_observatory()
 
         try:
-            response = requests.post(self.url, data=json.dumps(self.params), timeout=self.REQUEST_TIMEOUT)
+            response = requests.post(
+                self.url, data=json.dumps(self.params), timeout=self.REQUEST_TIMEOUT
+            )
         except requests.exceptions.RequestException as e:
             self.handle_exception(
-                e, 'Exception raised trying to POST request ' + self.url)
+                e, "Exception raised trying to POST request " + self.url
+            )
             return
 
         try:
             res = json.loads(response.text)
-            status = res['status']
-            tmpdir = res['tmpdir']
+            status = res["status"]
+            tmpdir = res["tmpdir"]
         except (KeyError, ValueError) as e:
             self.handle_exception(
-                e, 'Exception raised trying to decode server response ')
+                e, "Exception raised trying to decode server response "
+            )
             return
 
-        tmpurl = self.server + '/observing/etc/tmp/' + \
-            tmpdir + '/skytable.fits'
+        tmpurl = self.server + "/observing/etc/tmp/" + tmpdir + "/skytable.fits"
 
-        if status == 'success':
+        if status == "success":
             try:
                 # retrive and save FITS data (in memory)
                 self.retrieve_data(tmpurl)
             except requests.exceptions.RequestException as e:
-                self.handle_exception(
-                    e, 'could not retrieve FITS data from server')
+                self.handle_exception(e, "could not retrieve FITS data from server")
 
             self.delete_server_tmpdir(tmpdir)
 
         else:  # print why validation failed
-            self.handle_error('parameter validation error: ' +
-                              res['error'])
+            self.handle_error("parameter validation error: " + res["error"])
 
         if test:
             # print 'call() returning status:',status
