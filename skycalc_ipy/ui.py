@@ -59,7 +59,7 @@ class SkyCalc:
             if self.check_type[key] == "no_check" or self.defaults[key] is None:
                 continue
 
-            elif self.check_type[key] in ["range", "nearest"]:
+            if self.check_type[key] in ["range", "nearest"]:
                 if (
                     self.values[key] < self.allowed[key][0]
                     or self.values[key] > self.allowed[key][-1]
@@ -176,14 +176,14 @@ class SkyCalc:
 
             return tbl_return
 
-        elif "arr" in return_type:
+        if "arr" in return_type:
             wave = tbl["lam"].data * tbl["lam"].unit
             trans = tbl["trans"].data
             flux = tbl["flux"].data * tbl["flux"].unit
 
             return wave, trans, flux
 
-        elif "syn" in return_type:
+        if "syn" in return_type:
             import synphot as sp
 
             trans = sp.SpectralElement(
@@ -205,7 +205,7 @@ class SkyCalc:
 
             return trans, flux
 
-        elif "fit" in return_type:
+        if "fit" in return_type:
             hdu0 = fits.PrimaryHDU()
             for key in meta_data:
                 hdu0.header[key] = meta_data[key]
