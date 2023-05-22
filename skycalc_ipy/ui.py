@@ -207,8 +207,8 @@ class SkyCalc:
 
         if "fit" in return_type:
             hdu0 = fits.PrimaryHDU()
-            for key in meta_data:
-                hdu0.header[key] = meta_data[key]
+            for key, meta_data_value in meta_data.items():
+                hdu0.header[key] = meta_data_value
             hdu1 = fits.table_to_hdu(tbl)
             hdu = fits.HDUList([hdu0, hdu1])
 
