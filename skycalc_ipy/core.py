@@ -35,7 +35,7 @@ class AlmanacQuery:
 
     """
 
-    REQUEST_TIMEOUT = 1  # Time limit (in seconds) for server response
+    REQUEST_TIMEOUT = 2  # Time limit (in seconds) for server response
 
     def __init__(self, indic):
         if hasattr(indic, "defaults"):
@@ -181,7 +181,7 @@ class SkyModel:
 
     """
 
-    REQUEST_TIMEOUT = 1  # Time limit (in seconds) for server response
+    REQUEST_TIMEOUT = 2  # Time limit (in seconds) for server response
 
     def __init__(self):
         self.stop_on_errors_and_exceptions = True
