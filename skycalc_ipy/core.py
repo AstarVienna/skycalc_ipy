@@ -314,14 +314,21 @@ class SkyModel:
         print(e)
         print(self.bugreport_text)
         if self.stop_on_errors_and_exceptions:
-            sys.exit()
+            # There used to be a sys.exit here. That was probably there to
+            # provide a clean exit when using skycalc_ipy as a command-line
+            # tool or something like that. However, skycalc_ipy is also used as
+            # a library, and libraries should never just exit and this
+            # command-line functionality does not seem to exist. So instead,
+            # just raise here. See also handle_error() below.
+            raise
 
     # handle the kind of errors we issue ourselves.
     def handle_error(self, msg):
         print(msg)
         print(self.bugreport_text)
         if self.stop_on_errors_and_exceptions:
-            sys.exit()
+            # See handle_exception above.
+            raise
 
     def retrieve_data(self, url):
         try:
