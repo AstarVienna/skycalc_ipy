@@ -9,6 +9,7 @@ from __future__ import print_function
 
 import hashlib
 import json
+import os
 from datetime import datetime
 from pathlib import Path
 from typing import Dict
@@ -20,12 +21,16 @@ from astropy.io import fits
 
 def get_cache_filenames(params: Dict, suffix: str):
     """Get filenames to cache the data."""
-    # TODO: Add some way to overrule this.
+    # TODO: Perhaps create 'scopesim_data' package prepopulated with data.
+    if "SKYCALC_IPY_CACHE_DIR" in os.environ:
+        dir_cache = Path(os.environ["SKYCALC_IPY_CACHE_DIR"])
+    else:
+        dir_cache = Path(__file__).parent / "data"
     # Three underscores between the key-value pairs, two underscores
     # between the key and the value.
     akey = "___".join(f"{k}__{v}" for k, v in params.items())
     ahash = hashlib.sha256(akey.encode("utf-8")).hexdigest()
-    fn_data = Path(__file__).parent / "data" / f"{ahash}.{suffix}"
+    fn_data = dir_cache / f"{ahash}.{suffix}"
     fn_params = fn_data.with_suffix(".params.json")
     return fn_data, fn_params
 
