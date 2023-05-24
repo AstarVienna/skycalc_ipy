@@ -443,16 +443,12 @@ class SkyModel:
 
         Parameters
         ----------
-        keys : list or tuple, optional
-            If given, then a list of keyword names
+        keys : sequence of str, optional
+            List of keys to print. If None, all keys will be printed.
 
         """
-        if keys is None:
-            p = self.params
-        else:
-            p = dict((k, self.params[k]) for k in keys if k in self.params)
-        for k in p:
-            print(k, p[k])
+        for key in keys or self.params.keys():
+            print(key, self.params[key])
 
     def reset(self):
         self.__init__()
