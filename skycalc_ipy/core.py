@@ -8,14 +8,26 @@ Credit for ``skycalc_cli`` goes to ESO
 from __future__ import print_function
 
 import hashlib
-import sys
 import json
 from datetime import datetime
 from pathlib import Path
+from typing import Dict
 
 import requests
 
 from astropy.io import fits
+
+
+def get_cache_filenames(params: Dict, suffix: str):
+    """Get filenames to cache the data."""
+    # TODO: Add some way to overrule this.
+    # Three underscores between the key-value pairs, two underscores
+    # between the key and the value.
+    akey = "___".join(f"{k}__{v}" for k, v in params.items())
+    ahash = hashlib.sha256(akey.encode("utf-8")).hexdigest()
+    fn_data = Path(__file__).parent / "data" / f"{ahash}.{suffix}"
+    fn_params = fn_data.with_suffix(".params.json")
+    return fn_data, fn_params
 
 
 class AlmanacQuery:
@@ -117,13 +129,6 @@ class AlmanacQuery:
         if "observatory" in indic:
             self.almindic["observatory"] = indic["observatory"]
 
-    def key_from_params(self):
-        """Convert the parameters to a key to cache the data."""
-        # Three underscores between the key-value pairs, two underscores
-        # between the key and the value.
-        astring = "skycalc_" + "___".join(f"{k}__{v}" for k, v in self.almindic.items())
-        return hashlib.sha256(astring.encode("utf-8")).hexdigest()
-
     def query(self):
         """
         Queries the ESO Skycalc server with the parameters in self.almindic
@@ -134,35 +139,29 @@ class AlmanacQuery:
             Dictionary with the relevant parameters for the date given
 
         """
-        fn_local = Path(__file__).parent / "data" / f"{self.key_from_params()}.json"
-        if fn_local.exists():
-            rawdata = open(fn_local).read()
+        fn_data, fn_params = get_cache_filenames(self.almindic, "json")
+        if fn_data.exists():
+            jsondata = json.load(open(fn_data))
         else:
             url = self.almserver + self.almurl
 
-            try:
-                response = requests.post(
-                    url, json.dumps(self.almindic), timeout=self.REQUEST_TIMEOUT
-                )
-                rawdata = response.text
-            except requests.exceptions.RequestException:
-                print("Error: Almanac query failed.")
-                raise
+            response = requests.post(
+                url, json.dumps(self.almindic), timeout=self.REQUEST_TIMEOUT
+            )
+            rawdata = response.text
+
+            jsondata1 = json.loads(rawdata)
+            jsondata = jsondata1["output"]
+            # Use a fixed date so the stored files are always identical for
+            # identical requests.
+            jsondata["execution_datetime"] = "2017-01-07T00:00:00 UTC"
 
             try:
-                with open(fn_local, 'w') as fl:
-                    fl.write(rawdata)
+                json.dump(jsondata, open(fn_data, 'w'))
+                json.dump(self.almindic, open(fn_params, 'w'))
             except PermissionError:
                 # Apparently it is not possible to save here.
                 pass
-
-        # Process rawdata
-        try:
-            jsondata = json.loads(rawdata)
-            jsondata = jsondata["output"]
-        except (KeyError, ValueError):
-            print("Error: invalid Almanac response.")
-            raise
 
         # Find the relevant (key, value)
         almdata = {}
@@ -359,6 +358,9 @@ class SkyModel:
     def retrieve_data(self, url):
         try:
             self.data = fits.open(url)
+            # Use a fixed date so the stored files are always identical for
+            # identical requests.
+            self.data[0].header["DATE"] = "2017-01-07T00:00:00"
         except requests.exceptions.RequestException as e:
             self.handle_exception(
                 e, "Exception raised trying to get FITS data from " + url
@@ -403,13 +405,6 @@ class SkyModel:
                 e, "Exception raised trying to delete tmp dir " + tmpdir
             )
 
-    def key_from_params(self):
-        """Convert the parameters to a key to cache the data."""
-        # Three underscores between the key-value pairs, two underscores
-        # between the key and the value.
-        astring = "skycalc_" + "___".join(f"{k}__{v}" for k, v in self.params.items())
-        return hashlib.sha256(astring.encode("utf-8")).hexdigest()
-
     def call(self, test=False):
         # print 'self.url=',self.url
         # print 'self.params=',self.params
@@ -423,9 +418,9 @@ class SkyModel:
         ]:
             self.fix_observatory()
 
-        fn_local = Path(__file__).parent / "data" / f"{self.key_from_params()}.fits"
-        if fn_local.exists():
-            self.data = fits.open(fn_local)
+        fn_data, fn_params = get_cache_filenames(self.params, "fits")
+        if fn_data.exists():
+            self.data = fits.open(fn_data)
             return
 
         try:
@@ -458,7 +453,8 @@ class SkyModel:
                 self.handle_exception(e, "could not retrieve FITS data from server")
 
             try:
-                self.data.writeto(fn_local)
+                self.data.writeto(fn_data)
+                json.dump(self.params, open(fn_params, 'w'))
             except PermissionError:
                 # Apparently it is not possible to save here.
                 pass
