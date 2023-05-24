@@ -19,7 +19,7 @@ import requests
 from astropy.io import fits
 
 
-def get_cache_filenames(params: Dict, suffix: str):
+def get_cache_filenames(params: Dict, prefix: str, suffix: str):
     """Get filenames to cache the data."""
     # TODO: Perhaps create 'scopesim_data' package prepopulated with data.
     if "SKYCALC_IPY_CACHE_DIR" in os.environ:
@@ -30,7 +30,7 @@ def get_cache_filenames(params: Dict, suffix: str):
     # between the key and the value.
     akey = "___".join(f"{k}__{v}" for k, v in params.items())
     ahash = hashlib.sha256(akey.encode("utf-8")).hexdigest()
-    fn_data = dir_cache / f"{ahash}.{suffix}"
+    fn_data = dir_cache / f"{prefix}_{ahash}.{suffix}"
     fn_params = fn_data.with_suffix(".params.json")
     return fn_data, fn_params
 
@@ -144,7 +144,7 @@ class AlmanacQuery:
             Dictionary with the relevant parameters for the date given
 
         """
-        fn_data, fn_params = get_cache_filenames(self.almindic, "json")
+        fn_data, fn_params = get_cache_filenames(self.almindic, "almanacquery", "json")
         if fn_data.exists():
             jsondata = json.load(open(fn_data))
         else:
@@ -423,7 +423,7 @@ class SkyModel:
         ]:
             self.fix_observatory()
 
-        fn_data, fn_params = get_cache_filenames(self.params, "fits")
+        fn_data, fn_params = get_cache_filenames(self.params, "skymodel", "fits")
         if fn_data.exists():
             self.data = fits.open(fn_data)
             return
