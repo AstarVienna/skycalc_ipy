@@ -43,15 +43,14 @@ class SkyCalc:
         if param_names is None:
             param_names = list(self.comments.keys())
 
-        if type(param_names) is str:
+        if isinstance(param_names, str):
             param_names = [param_names]
 
         for pname in param_names:
             if pname not in self.comments:
-                msg = pname + " not found"
-                print(msg)
+                print(f"{pname} not found")
             else:
-                print("{} : {}".format(pname, self.comments[pname]))
+                print(f"{pname} : {self.comments[pname]}")
 
     def validate_params(self):
         valid = True
@@ -60,7 +59,7 @@ class SkyCalc:
             if self.check_type[key] == "no_check" or self.defaults[key] is None:
                 continue
 
-            elif self.check_type[key] in ["range", "nearest"]:
+            if self.check_type[key] in ["range", "nearest"]:
                 if (
                     self.values[key] < self.allowed[key][0]
                     or self.values[key] > self.allowed[key][-1]
@@ -89,7 +88,7 @@ class SkyCalc:
             print("See <SkyCalc>.comments[<key>] for help")
             print("The following entries are invalid:")
             for key in invalid_keys:
-                print("'{}' : {} :".format(key, self.values[key]), self.comments[key])
+                print(f"'{key}' : {self.values[key]} :", self.comments[key])
 
         return valid
 
@@ -137,7 +136,7 @@ class SkyCalc:
         from astropy import table
 
         if not self.validate_params():
-            raise ValueError("Object contains invalid parameters. " "Not calling ESO")
+            raise ValueError("Object contains invalid parameters. Not calling ESO")
 
         skm = SkyModel()
         skm.callwith(self.values)
@@ -177,14 +176,14 @@ class SkyCalc:
 
             return tbl_return
 
-        elif "arr" in return_type:
+        if "arr" in return_type:
             wave = tbl["lam"].data * tbl["lam"].unit
             trans = tbl["trans"].data
             flux = tbl["flux"].data * tbl["flux"].unit
 
             return wave, trans, flux
 
-        elif "syn" in return_type:
+        if "syn" in return_type:
             import synphot as sp
 
             trans = sp.SpectralElement(
@@ -206,10 +205,10 @@ class SkyCalc:
 
             return trans, flux
 
-        elif "fit" in return_type:
+        if "fit" in return_type:
             hdu0 = fits.PrimaryHDU()
-            for key in meta_data:
-                hdu0.header[key] = meta_data[key]
+            for key, meta_data_value in meta_data.items():
+                hdu0.header[key] = meta_data_value
             hdu1 = fits.table_to_hdu(tbl)
             hdu = fits.HDUList([hdu0, hdu1])
 

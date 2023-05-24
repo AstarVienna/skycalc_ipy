@@ -147,7 +147,7 @@ class AlmanacQuery:
         almdata = {}
         for key, value in self.alm_parameters.items():
             prefix = value.split("_")[0]
-            if prefix == "sun" or prefix == "moon" or prefix == "target":
+            if prefix in {"sun", "moon", "target"}:
                 subsection = prefix
             elif prefix == "ecl":
                 subsection = "target"
@@ -156,13 +156,8 @@ class AlmanacQuery:
             try:
                 almdata[key] = jsondata[subsection][value]
             except (KeyError, ValueError):
-                print(
-                    'Warning: key "'
-                    + subsection
-                    + "/"
-                    + value
-                    + '" not found in the Almanac response.'
-                )
+                print(f"Warning: key \"{subsection}/{value}\" not found in the"
+                      " Almanac response.")
 
         return almdata
 
@@ -303,7 +298,7 @@ class SkyModel:
             self.params["observatory"] = "5000"
         else:
             raise ValueError(
-                "Wrong Observatory name, please refer to the " "documentation."
+                "Wrong Observatory name, please refer to the documentation."
             )
 
     def __getitem__(self, item):
@@ -379,13 +374,13 @@ class SkyModel:
         # print 'self.url=',self.url
         # print 'self.params=',self.params
 
-        if self.params["observatory"] in [
+        if self.params["observatory"] in {
             "paranal",
             "lasilla",
             "armazones",
             "3060m",
             "5000m",
-        ]:
+        }:
             self.fix_observatory()
 
         try:
