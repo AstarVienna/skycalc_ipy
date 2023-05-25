@@ -53,7 +53,6 @@ class SkyCalc:
                 print(f"{pname} : {self.comments[pname]}")
 
     def validate_params(self):
-        valid = True
         invalid_keys = []
         for key in self.values:
             if self.check_type[key] == "no_check" or self.defaults[key] is None:
@@ -64,7 +63,6 @@ class SkyCalc:
                     self.values[key] < self.allowed[key][0]
                     or self.values[key] > self.allowed[key][-1]
                 ):
-                    valid = False
                     invalid_keys += [key]
 
                     if self.check_type[key] == "nearest":
@@ -73,24 +71,22 @@ class SkyCalc:
 
             elif self.check_type[key] in ["choice", "flag"]:
                 if self.values[key] not in self.allowed[key]:
-                    valid = False
                     invalid_keys += [key]
 
             elif self.check_type[key] == "greater_than":
                 if self.values[key] < self.allowed[key]:
-                    valid = False
                     invalid_keys += [key]
 
             else:
                 pass
 
-        if not valid:
+        if invalid_keys:
             print("See <SkyCalc>.comments[<key>] for help")
             print("The following entries are invalid:")
             for key in invalid_keys:
                 print(f"'{key}' : {self.values[key]} :", self.comments[key])
 
-        return valid
+        return bool(invalid_keys)
 
     def get_almanac_data(
         self, ra, dec, date=None, mjd=None, observatory=None, update_values=False
