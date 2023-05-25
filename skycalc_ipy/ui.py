@@ -84,7 +84,7 @@ class SkyCalc:
             print("See <SkyCalc>.comments[<key>] for help")
             print("The following entries are invalid:")
             for key in invalid_keys:
-                print(f"'{key}' : {self.values[key]} :", self.comments[key])
+                print(f"'{key}' : {self.values[key]} : {self.comments[key]}")
 
         return bool(invalid_keys)
 
