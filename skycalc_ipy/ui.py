@@ -63,7 +63,7 @@ class SkyCalc:
                     self.values[key] < self.allowed[key][0]
                     or self.values[key] > self.allowed[key][-1]
                 ):
-                    invalid_keys += [key]
+                    invalid_keys.append(key)
 
                     if self.check_type[key] == "nearest":
                         ii = np.argmin(np.abs(self.allowed[key] - self.values[key]))
@@ -71,11 +71,11 @@ class SkyCalc:
 
             elif self.check_type[key] in ["choice", "flag"]:
                 if self.values[key] not in self.allowed[key]:
-                    invalid_keys += [key]
+                    invalid_keys.append(key)
 
             elif self.check_type[key] == "greater_than":
                 if self.values[key] < self.allowed[key]:
-                    invalid_keys += [key]
+                    invalid_keys.append(key)
 
             else:
                 pass
