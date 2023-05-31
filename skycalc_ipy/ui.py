@@ -53,47 +53,50 @@ class SkyCalc:
                 print(f"{pname} : {self.comments[pname]}")
 
     def validate_params(self):
-        valid = True
         invalid_keys = []
         for key in self.values:
             if self.check_type[key] == "no_check" or self.defaults[key] is None:
                 continue
 
-            if self.check_type[key] in ["range", "nearest"]:
+            if self.check_type[key] in {"range", "nearest"}:
                 if (
                     self.values[key] < self.allowed[key][0]
                     or self.values[key] > self.allowed[key][-1]
                 ):
-                    valid = False
-                    invalid_keys += [key]
+                    invalid_keys.append(key)
 
                     if self.check_type[key] == "nearest":
-                        ii = np.argmin(np.abs(self.allowed[key] - self.values[key]))
-                        self.values[key] = self.allowed[key][ii]
+                        nearest = np.argmin(np.abs(self.allowed[key]
+                                                   - self.values[key]))
+                        self.values[key] = self.allowed[key][nearest]
 
-            elif self.check_type[key] in ["choice", "flag"]:
+            elif self.check_type[key] in {"choice", "flag"}:
                 if self.values[key] not in self.allowed[key]:
-                    valid = False
-                    invalid_keys += [key]
+                    invalid_keys.append(key)
 
             elif self.check_type[key] == "greater_than":
                 if self.values[key] < self.allowed[key]:
-                    valid = False
-                    invalid_keys += [key]
+                    invalid_keys.append(key)
 
             else:
                 pass
 
-        if not valid:
+        if invalid_keys:
             print("See <SkyCalc>.comments[<key>] for help")
             print("The following entries are invalid:")
             for key in invalid_keys:
-                print(f"'{key}' : {self.values[key]} :", self.comments[key])
+                print(f"'{key}' : {self.values[key]} : {self.comments[key]}")
 
-        return valid
+        return not invalid_keys
 
     def get_almanac_data(
-        self, ra, dec, date=None, mjd=None, observatory=None, update_values=False
+        self,
+        ra,
+        dec,
+        date=None,
+        mjd=None,
+        observatory=None,
+        update_values=False,
     ):
         if date is None and mjd is None:
             raise ValueError("Either date or mjd must be set")
@@ -245,7 +248,12 @@ def load_yaml(ipt_str):
 
 
 def get_almanac_data(
-    ra, dec, date=None, mjd=None, return_full_dict=False, observatory=None
+    ra,
+    dec,
+    date=None,
+    mjd=None,
+    return_full_dict=False,
+    observatory=None,
 ):
     if date is not None and mjd is not None:
         print("Warning: Both date and mjd are set. Using date")
@@ -261,5 +269,5 @@ def get_almanac_data(
     if return_full_dict:
         skycalc_params.values.update(response)
         return skycalc_params.values
-    else:
-        return response
+
+    return response
