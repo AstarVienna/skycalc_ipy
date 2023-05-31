@@ -308,9 +308,9 @@ class SkyModel:
         if key == "observatory":
             self.fix_observatory()
 
-    def handle_exception(self, e, msg):
+    def handle_exception(self, err, msg):
         print(msg)
-        print(e)
+        print(err)
         print(self.bugreport_text)
         if self.stop_on_errors_and_exceptions:
             # There used to be a sys.exit here. That was probably there to
@@ -332,16 +332,16 @@ class SkyModel:
     def retrieve_data(self, url):
         try:
             self.data = fits.open(url)
-        except requests.exceptions.RequestException as e:
+        except requests.exceptions.RequestException as err:
             self.handle_exception(
-                e, "Exception raised trying to get FITS data from " + url
+                err, "Exception raised trying to get FITS data from " + url
             )
 
     def write(self, local_filename, **kwargs):
         try:
             self.data.writeto(local_filename, **kwargs)
-        except IOError as e:
-            self.handle_exception(e, "Exception raised trying to write fits file ")
+        except IOError as err:
+            self.handle_exception(err, "Exception raised trying to write fits file ")
 
     # ORIGINAL CODE
     # def retrieve_data(self, url):
@@ -371,9 +371,9 @@ class SkyModel:
             deleter_response = response.text.strip()
             if deleter_response != "ok":
                 self.handle_error("Could not delete server tmpdir " + tmpdir)
-        except requests.exceptions.RequestException as e:
+        except requests.exceptions.RequestException as err:
             self.handle_exception(
-                e, "Exception raised trying to delete tmp dir " + tmpdir
+                err, "Exception raised trying to delete tmp dir " + tmpdir
             )
 
     def call(self, test=False):
@@ -393,9 +393,9 @@ class SkyModel:
             response = requests.post(
                 self.url, data=json.dumps(self.params), timeout=self.REQUEST_TIMEOUT
             )
-        except requests.exceptions.RequestException as e:
+        except requests.exceptions.RequestException as err:
             self.handle_exception(
-                e, "Exception raised trying to POST request " + self.url
+                err, "Exception raised trying to POST request " + self.url
             )
             return
 
@@ -403,9 +403,9 @@ class SkyModel:
             res = json.loads(response.text)
             status = res["status"]
             tmpdir = res["tmpdir"]
-        except (KeyError, ValueError) as e:
+        except (KeyError, ValueError) as err:
             self.handle_exception(
-                e, "Exception raised trying to decode server response "
+                err, "Exception raised trying to decode server response "
             )
             return
 
@@ -415,8 +415,8 @@ class SkyModel:
             try:
                 # retrive and save FITS data (in memory)
                 self.retrieve_data(tmpurl)
-            except requests.exceptions.RequestException as e:
-                self.handle_exception(e, "could not retrieve FITS data from server")
+            except requests.exceptions.RequestException as err:
+                self.handle_exception(err, "could not retrieve FITS data from server")
 
             self.delete_server_tmpdir(tmpdir)
 
