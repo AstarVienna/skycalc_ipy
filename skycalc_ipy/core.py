@@ -344,23 +344,6 @@ class SkyModel:
         except IOError as e:
             self.handle_exception(e, "Exception raised trying to write fits file ")
 
-    # ORIGINAL CODE
-    # def retrieve_data(self, url):
-    #     try:
-    #         response = requests.get(url, stream=True)
-    #         self.data = response.content
-    #     except requests.exceptions.RequestException as e:
-    #         self.handle_exception(
-    #             e, 'Exception raised trying to get FITS data from ' + url)
-
-    # def write(self, local_filename):
-    #     try:
-    #         with open(local_filename, 'wb') as f:
-    #             f.write(self.data)
-    #     except IOError as e:
-    #         self.handle_exception(
-    #             e, 'Exception raised trying to write fits file ')
-
     def getdata(self):
         return self.data
 

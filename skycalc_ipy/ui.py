@@ -263,18 +263,3 @@ def get_almanac_data(
         return skycalc_params.values
     else:
         return response
-
-
-# def fix_observatory(in_dict):
-#
-#     if isinstance(in_dict, SkyCalc):
-#         in_dict = in_dict.values
-#
-#     if "observatory" in in_dict and in_dict["observatory"] in observatory_dict:
-#         in_dict["observatory_orig"] = deepcopy(in_dict["observatory"])
-#         in_dict["observatory"] = observatory_dict[in_dict["observatory"]]
-#     else:
-#         raise ValueError("Wrong Observatory name. "
-#                          "See `skycalc.ui.observatory_dict`")
-#
-#     return in_dict
