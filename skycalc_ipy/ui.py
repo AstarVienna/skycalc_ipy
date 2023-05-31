@@ -58,7 +58,7 @@ class SkyCalc:
             if self.check_type[key] == "no_check" or self.defaults[key] is None:
                 continue
 
-            if self.check_type[key] in ["range", "nearest"]:
+            if self.check_type[key] in {"range", "nearest"}:
                 if (
                     self.values[key] < self.allowed[key][0]
                     or self.values[key] > self.allowed[key][-1]
@@ -70,7 +70,7 @@ class SkyCalc:
                                                    - self.values[key]))
                         self.values[key] = self.allowed[key][nearest]
 
-            elif self.check_type[key] in ["choice", "flag"]:
+            elif self.check_type[key] in {"choice", "flag"}:
                 if self.values[key] not in self.allowed[key]:
                     invalid_keys.append(key)
 
