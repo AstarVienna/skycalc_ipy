@@ -6,7 +6,6 @@ Credit for ``skycalc_cli`` goes to ESO
 """
 
 from __future__ import print_function
-import sys
 import json
 from datetime import datetime
 import requests
