@@ -87,7 +87,7 @@ class SkyCalc:
             for key in invalid_keys:
                 print(f"'{key}' : {self.values[key]} : {self.comments[key]}")
 
-        return bool(invalid_keys)
+        return not invalid_keys
 
     def get_almanac_data(
         self,
