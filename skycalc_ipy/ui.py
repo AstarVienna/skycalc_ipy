@@ -89,7 +89,13 @@ class SkyCalc:
         return bool(invalid_keys)
 
     def get_almanac_data(
-        self, ra, dec, date=None, mjd=None, observatory=None, update_values=False
+        self,
+        ra,
+        dec,
+        date=None,
+        mjd=None,
+        observatory=None,
+        update_values=False,
     ):
         if date is None and mjd is None:
             raise ValueError("Either date or mjd must be set")
@@ -241,7 +247,12 @@ def load_yaml(ipt_str):
 
 
 def get_almanac_data(
-    ra, dec, date=None, mjd=None, return_full_dict=False, observatory=None
+    ra,
+    dec,
+    date=None,
+    mjd=None,
+    return_full_dict=False,
+    observatory=None,
 ):
     if date is not None and mjd is not None:
         print("Warning: Both date and mjd are set. Using date")
