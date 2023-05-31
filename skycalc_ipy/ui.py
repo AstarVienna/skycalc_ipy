@@ -268,8 +268,7 @@ def get_almanac_data(
     if return_full_dict:
         skycalc_params.values.update(response)
         return skycalc_params.values
-    else:
-        return response
+    return response
 
 
 # def fix_observatory(in_dict):
