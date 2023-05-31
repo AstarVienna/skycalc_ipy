@@ -145,7 +145,7 @@ class AlmanacQuery:
         # Find the relevant (key, value)
         almdata = {}
         for key, value in self.alm_parameters.items():
-            prefix = value.split("_")[0]
+            prefix = value.split("_", maxsplit=1)[0]
             if prefix in {"sun", "moon", "target"}:
                 subsection = prefix
             elif prefix == "ecl":
