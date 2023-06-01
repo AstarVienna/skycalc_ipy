@@ -165,7 +165,7 @@ class TestFunctionGetAlmanacData:
 
     @pytest.mark.webtest
     def test_throws_exception_for_invalid_dec(self):
-        # with raises(ValueError):
+        with raises(ValueError):
             ui.get_almanac_data(ra=180, dec=100, mjd=50000)
 
     def test_throws_exception_for_invalid_mjd(self):
