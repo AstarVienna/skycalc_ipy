@@ -56,7 +56,7 @@ class AlmanacQuery:
 
     """
 
-    REQUEST_TIMEOUT = 1  # Time limit (in seconds) for server response
+    REQUEST_TIMEOUT = 2  # Time limit (in seconds) for server response
 
     def __init__(self, indic):
         if hasattr(indic, "defaults"):
@@ -171,8 +171,8 @@ class AlmanacQuery:
         # Find the relevant (key, value)
         almdata = {}
         for key, value in self.alm_parameters.items():
-            prefix = value.split("_")[0]
-            if prefix == "sun" or prefix == "moon" or prefix == "target":
+            prefix = value.split("_", maxsplit=1)[0]
+            if prefix in {"sun", "moon", "target"}:
                 subsection = prefix
             elif prefix == "ecl":
                 subsection = "target"
@@ -181,13 +181,8 @@ class AlmanacQuery:
             try:
                 almdata[key] = jsondata[subsection][value]
             except (KeyError, ValueError):
-                print(
-                    'Warning: key "'
-                    + subsection
-                    + "/"
-                    + value
-                    + '" not found in the Almanac response.'
-                )
+                print(f"Warning: key \"{subsection}/{value}\" not found in the"
+                      " Almanac response.")
 
         return almdata
 
@@ -206,7 +201,7 @@ class SkyModel:
 
     """
 
-    REQUEST_TIMEOUT = 1  # Time limit (in seconds) for server response
+    REQUEST_TIMEOUT = 2  # Time limit (in seconds) for server response
 
     def __init__(self):
         self.stop_on_errors_and_exceptions = True
@@ -328,7 +323,7 @@ class SkyModel:
             self.params["observatory"] = "5000"
         else:
             raise ValueError(
-                "Wrong Observatory name, please refer to the " "documentation."
+                "Wrong Observatory name, please refer to the documentation."
             )
 
     def __getitem__(self, item):
@@ -339,9 +334,9 @@ class SkyModel:
         if key == "observatory":
             self.fix_observatory()
 
-    def handle_exception(self, e, msg):
+    def handle_exception(self, err, msg):
         print(msg)
-        print(e)
+        print(err)
         print(self.bugreport_text)
         if self.stop_on_errors_and_exceptions:
             # There used to be a sys.exit here. That was probably there to
@@ -366,33 +361,16 @@ class SkyModel:
             # Use a fixed date so the stored files are always identical for
             # identical requests.
             self.data[0].header["DATE"] = "2017-01-07T00:00:00"
-        except requests.exceptions.RequestException as e:
+        except requests.exceptions.RequestException as err:
             self.handle_exception(
-                e, "Exception raised trying to get FITS data from " + url
+                err, "Exception raised trying to get FITS data from " + url
             )
 
     def write(self, local_filename, **kwargs):
         try:
             self.data.writeto(local_filename, **kwargs)
-        except IOError as e:
-            self.handle_exception(e, "Exception raised trying to write fits file ")
-
-    # ORIGINAL CODE
-    # def retrieve_data(self, url):
-    #     try:
-    #         response = requests.get(url, stream=True)
-    #         self.data = response.content
-    #     except requests.exceptions.RequestException as e:
-    #         self.handle_exception(
-    #             e, 'Exception raised trying to get FITS data from ' + url)
-
-    # def write(self, local_filename):
-    #     try:
-    #         with open(local_filename, 'wb') as f:
-    #             f.write(self.data)
-    #     except IOError as e:
-    #         self.handle_exception(
-    #             e, 'Exception raised trying to write fits file ')
+        except IOError as err:
+            self.handle_exception(err, "Exception raised trying to write fits file ")
 
     def getdata(self):
         return self.data
@@ -405,22 +383,22 @@ class SkyModel:
             deleter_response = response.text.strip()
             if deleter_response != "ok":
                 self.handle_error("Could not delete server tmpdir " + tmpdir)
-        except requests.exceptions.RequestException as e:
+        except requests.exceptions.RequestException as err:
             self.handle_exception(
-                e, "Exception raised trying to delete tmp dir " + tmpdir
+                err, "Exception raised trying to delete tmp dir " + tmpdir
             )
 
     def call(self, test=False):
         # print 'self.url=',self.url
         # print 'self.params=',self.params
 
-        if self.params["observatory"] in [
+        if self.params["observatory"] in {
             "paranal",
             "lasilla",
             "armazones",
             "3060m",
             "5000m",
-        ]:
+        }:
             self.fix_observatory()
 
         fn_data, fn_params = get_cache_filenames(self.params, "skymodel", "fits")
@@ -432,9 +410,9 @@ class SkyModel:
             response = requests.post(
                 self.url, data=json.dumps(self.params), timeout=self.REQUEST_TIMEOUT
             )
-        except requests.exceptions.RequestException as e:
+        except requests.exceptions.RequestException as err:
             self.handle_exception(
-                e, "Exception raised trying to POST request " + self.url
+                err, "Exception raised trying to POST request " + self.url
             )
             return
 
@@ -442,9 +420,9 @@ class SkyModel:
             res = json.loads(response.text)
             status = res["status"]
             tmpdir = res["tmpdir"]
-        except (KeyError, ValueError) as e:
+        except (KeyError, ValueError) as err:
             self.handle_exception(
-                e, "Exception raised trying to decode server response "
+                err, "Exception raised trying to decode server response "
             )
             return
 
@@ -454,8 +432,8 @@ class SkyModel:
             try:
                 # retrive and save FITS data (in memory)
                 self.retrieve_data(tmpurl)
-            except requests.exceptions.RequestException as e:
-                self.handle_exception(e, "could not retrieve FITS data from server")
+            except requests.exceptions.RequestException as err:
+                self.handle_exception(err, "could not retrieve FITS data from server")
 
             try:
                 self.data.writeto(fn_data)
@@ -488,16 +466,12 @@ class SkyModel:
 
         Parameters
         ----------
-        keys : list or tuple, optional
-            If given, then a list of keyword names
+        keys : sequence of str, optional
+            List of keys to print. If None, all keys will be printed.
 
         """
-        if keys is None:
-            p = self.params
-        else:
-            p = dict((k, self.params[k]) for k in keys if k in self.params)
-        for k in p:
-            print(k, p[k])
+        for key in keys or self.params.keys():
+            print(key, self.params[key])
 
     def reset(self):
         self.__init__()
