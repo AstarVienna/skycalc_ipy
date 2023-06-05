@@ -13,10 +13,16 @@ import os
 from datetime import datetime
 from pathlib import Path
 from typing import Dict
+from types import ModuleType
 
 import requests
 
 from astropy.io import fits
+
+try:
+    import scopesim_data
+except:
+    scopesim_data = None
 
 
 def get_cache_filenames(params: Dict, prefix: str, suffix: str):
@@ -30,12 +36,10 @@ def get_cache_filenames(params: Dict, prefix: str, suffix: str):
 
     if "SKYCALC_IPY_CACHE_DIR" in os.environ:
         dir_cache = Path(os.environ["SKYCALC_IPY_CACHE_DIR"])
+    elif isinstance(scopesim_data, ModuleType):
+        dir_cache = scopesim_data.dir_cache_skycalc
     else:
-        try:
-            import scopesim_data
-            dir_cache = scopesim_data.dir_scopesim_cache
-        except ImportError:
-            dir_cache = Path(__file__).parent / "data"
+        dir_cache = Path(__file__).parent / "data"
     # Three underscores between the key-value pairs, two underscores
     # between the key and the value.
     akey = "___".join(f"{k}__{v}" for k, v in params.items())
@@ -174,7 +178,7 @@ class AlmanacQuery:
             try:
                 json.dump(jsondata, open(fn_data, 'w'))
                 json.dump(self.almindic, open(fn_params, 'w'))
-            except PermissionError:
+            except (PermissionError, FileNotFoundError):
                 # Apparently it is not possible to save here.
                 pass
 
@@ -379,7 +383,7 @@ class SkyModel:
     def write(self, local_filename, **kwargs):
         try:
             self.data.writeto(local_filename, **kwargs)
-        except IOError as err:
+        except (IOError, FileNotFoundError) as err:
             self.handle_exception(err, "Exception raised trying to write fits file ")
 
     def getdata(self):
@@ -448,7 +452,7 @@ class SkyModel:
             try:
                 self.data.writeto(fn_data)
                 json.dump(self.params, open(fn_params, 'w'))
-            except PermissionError:
+            except (PermissionError, FileNotFoundError):
                 # Apparently it is not possible to save here.
                 pass
 
