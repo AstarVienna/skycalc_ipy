@@ -20,12 +20,22 @@ from astropy.io import fits
 
 
 def get_cache_filenames(params: Dict, prefix: str, suffix: str):
-    """Get filenames to cache the data."""
-    # TODO: Perhaps create 'scopesim_data' package prepopulated with data.
+    """Get filenames to cache the data.
+
+    There are three possible locations for the cache directory:
+    1. As set in `os.environ["SKYCALC_IPY_CACHE_DIR"]`
+    2. As set in the `scopesim_data` package.
+    3. The `data` directory in this package.
+    """
+
     if "SKYCALC_IPY_CACHE_DIR" in os.environ:
         dir_cache = Path(os.environ["SKYCALC_IPY_CACHE_DIR"])
     else:
-        dir_cache = Path(__file__).parent / "data"
+        try:
+            import scopesim_data
+            dir_cache = scopesim_data.dir_scopesim_cache
+        except ImportError:
+            dir_cache = Path(__file__).parent / "data"
     # Three underscores between the key-value pairs, two underscores
     # between the key and the value.
     akey = "___".join(f"{k}__{v}" for k, v in params.items())
