@@ -1,5 +1,7 @@
 import os
 import inspect
+
+import pytest
 from pytest import raises
 from skycalc_ipy import ui
 from astropy import table
@@ -86,6 +88,7 @@ class TestSkycalcParamsValidateMethod(object):
 
 
 class TestSkyCalcParamsGetSkySpectrum:
+    @pytest.mark.webtest
     def test_returns_data_with_valid_parameters(self):
         tbl = skp_small.get_sky_spectrum()
         assert "lam" in tbl.colnames
@@ -98,14 +101,17 @@ class TestSkyCalcParamsGetSkySpectrum:
         with raises(ValueError):
             skp.get_sky_spectrum()
 
+    @pytest.mark.webtest
     def test_returns_table_for_return_type_table(self):
         tbl = skp_small.get_sky_spectrum(return_type="table")
         assert isinstance(tbl, table.Table)
 
+    @pytest.mark.webtest
     def test_returns_fits_for_return_type_fits(self):
         hdu = skp_small.get_sky_spectrum(return_type="fits")
         assert isinstance(hdu, fits.HDUList)
 
+    @pytest.mark.webtest
     def test_returned_fits_has_proper_meta_data(self):
         hdu = skp_small.get_sky_spectrum(return_type="fits")
         assert "DATE_CRE" in hdu[0].header
@@ -113,10 +119,12 @@ class TestSkyCalcParamsGetSkySpectrum:
         assert "AIRMASS" in hdu[0].header
         assert hdu[0].header["ETYPE"] == "TERCurve"
 
+    @pytest.mark.webtest
     def test_returns_three_arrays_for_return_type_array(self):
         arrs = skp_small.get_sky_spectrum(return_type="array")
         assert len(arrs) == 3
 
+    @pytest.mark.webtest
     def test_returns_two_synphot_objects_for_return_type_synphot(self):
         trans, flux = skp_small.get_sky_spectrum(return_type="synphot")
         assert isinstance(trans, sp.SpectralElement)
@@ -127,6 +135,7 @@ class TestSkyCalcParamsGetSkySpectrum:
 
 
 class TestSkyCalcParamsGetAlmanacData:
+    @pytest.mark.webtest
     def test_return_updated_SkyCalcParams_values_dict_when_flag_true(self):
         out_dict = skp.get_almanac_data(
             ra=180, dec=0, mjd=50000, observatory="lasilla", update_values=True
@@ -134,6 +143,7 @@ class TestSkyCalcParamsGetAlmanacData:
         assert out_dict["observatory"] == "lasilla"
         assert skp["observatory"] == "lasilla"
 
+    @pytest.mark.webtest
     def test_return_only_almanac_data_when_update_flag_false(self):
         skp2["observatory"] == "paranal"
         out_dict = skp.get_almanac_data(
@@ -148,10 +158,12 @@ class TestSkyCalcParamsGetAlmanacData:
 
 
 class TestFunctionGetAlmanacData:
+    @pytest.mark.webtest
     def test_throws_exception_for_invalid_ra(self):
         with raises(ValueError):
             ui.get_almanac_data(ra=-10, dec=0, mjd=50000)
 
+    @pytest.mark.webtest
     def test_throws_exception_for_invalid_dec(self):
         with raises(ValueError):
             ui.get_almanac_data(ra=180, dec=100, mjd=50000)
@@ -164,6 +176,7 @@ class TestFunctionGetAlmanacData:
         with raises(ValueError):
             ui.get_almanac_data(ra=180, dec=0, date="2000-0-0T0:0:0")
 
+    @pytest.mark.webtest
     def test_return_data_for_valid_parameters(self):
         out_dict = ui.get_almanac_data(
             ra=180, dec=0, date="2000-1-1T0:0:0", observatory="lasilla"
@@ -172,6 +185,7 @@ class TestFunctionGetAlmanacData:
         assert len(out_dict) == 9
         assert out_dict["observatory"] == "lasilla"
 
+    @pytest.mark.webtest
     def test_return_full_dict_when_flag_true(self):
         out_dict = ui.get_almanac_data(
             ra=180, dec=0, date="2000-1-1T0:0:0", return_full_dict=True
@@ -180,6 +194,7 @@ class TestFunctionGetAlmanacData:
         assert len(out_dict) == 39
         assert type(out_dict["moon_sun_sep"]) == float
 
+    @pytest.mark.webtest
     def test_return_only_almanac_dict_when_flag_false(self):
         out_dict = ui.get_almanac_data(
             ra=180, dec=0, date="2000-1-1T0:0:0", return_full_dict=False
@@ -187,6 +202,7 @@ class TestFunctionGetAlmanacData:
         assert type(out_dict) == dict
         assert len(out_dict) == 9
 
+    @pytest.mark.webtest
     def test_take_date_only_if_date_and_mjd_are_valid(self, capsys):
         out_dict_date = ui.get_almanac_data(ra=180, dec=0, date="2000-1-1T0:0:0")
         out_dict_both = ui.get_almanac_data(
@@ -198,6 +214,7 @@ class TestFunctionGetAlmanacData:
 
 
 class TestDocExamples:
+    @pytest.mark.webtest
     def test_example(self):
         skycalc = ui.SkyCalc()
         skycalc.get_almanac_data(

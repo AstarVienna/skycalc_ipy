@@ -32,7 +32,6 @@ ENV/
 # Generics
 not-included/
 dist/
-*.fits
 build/
 
 # Testing related

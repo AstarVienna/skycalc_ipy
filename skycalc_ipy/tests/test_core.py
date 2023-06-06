@@ -48,3 +48,21 @@ class TestAlmanacInit:
         skp.update({"mjd": "bogus"})
         with raises(ValueError):
             core.AlmanacQuery(skp)
+
+class TestLoadDataFromCache:
+    def test_load_skymodel_from_cache(self):
+        """Should load cached data in data directory."""
+        params = {
+            "ra": 11.,
+            "dec": 22.,
+            "date": "1999-01-02T02:03:04",
+            "wdelta": 100.,
+        }
+
+        skymodel = core.SkyModel()
+        skymodel.callwith(params)
+
+        alm = core.AlmanacQuery(params)
+        alm.query()
+
+

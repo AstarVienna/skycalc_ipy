@@ -6,11 +6,47 @@ Credit for ``skycalc_cli`` goes to ESO
 """
 
 from __future__ import print_function
+
+import hashlib
 import json
+import os
 from datetime import datetime
+from pathlib import Path
+from typing import Dict
+from types import ModuleType
+
 import requests
 
 from astropy.io import fits
+
+try:
+    import scopesim_data
+except:
+    scopesim_data = None
+
+
+def get_cache_filenames(params: Dict, prefix: str, suffix: str):
+    """Get filenames to cache the data.
+
+    There are three possible locations for the cache directory:
+    1. As set in `os.environ["SKYCALC_IPY_CACHE_DIR"]`
+    2. As set in the `scopesim_data` package.
+    3. The `data` directory in this package.
+    """
+
+    if "SKYCALC_IPY_CACHE_DIR" in os.environ:
+        dir_cache = Path(os.environ["SKYCALC_IPY_CACHE_DIR"])
+    elif isinstance(scopesim_data, ModuleType):
+        dir_cache = scopesim_data.dir_cache_skycalc
+    else:
+        dir_cache = Path(__file__).parent / "data"
+    # Three underscores between the key-value pairs, two underscores
+    # between the key and the value.
+    akey = "___".join(f"{k}__{v}" for k, v in params.items())
+    ahash = hashlib.sha256(akey.encode("utf-8")).hexdigest()
+    fn_data = dir_cache / f"{prefix}_{ahash}.{suffix}"
+    fn_params = fn_data.with_suffix(".params.json")
+    return fn_data, fn_params
 
 
 class AlmanacQuery:
@@ -122,25 +158,29 @@ class AlmanacQuery:
             Dictionary with the relevant parameters for the date given
 
         """
+        fn_data, fn_params = get_cache_filenames(self.almindic, "almanacquery", "json")
+        if fn_data.exists():
+            jsondata = json.load(open(fn_data))
+        else:
+            url = self.almserver + self.almurl
 
-        url = self.almserver + self.almurl
-
-        try:
             response = requests.post(
                 url, json.dumps(self.almindic), timeout=self.REQUEST_TIMEOUT
             )
             rawdata = response.text
-        except requests.exceptions.RequestException:
-            print("Error: Almanac query failed.")
-            raise
 
-        # Process rawdata
-        try:
-            jsondata = json.loads(rawdata)
-            jsondata = jsondata["output"]
-        except (KeyError, ValueError):
-            print("Error: invalid Almanac response.")
-            raise
+            jsondata1 = json.loads(rawdata)
+            jsondata = jsondata1["output"]
+            # Use a fixed date so the stored files are always identical for
+            # identical requests.
+            jsondata["execution_datetime"] = "2017-01-07T00:00:00 UTC"
+
+            try:
+                json.dump(jsondata, open(fn_data, 'w'))
+                json.dump(self.almindic, open(fn_params, 'w'))
+            except (PermissionError, FileNotFoundError):
+                # Apparently it is not possible to save here.
+                pass
 
         # Find the relevant (key, value)
         almdata = {}
@@ -332,6 +372,9 @@ class SkyModel:
     def retrieve_data(self, url):
         try:
             self.data = fits.open(url)
+            # Use a fixed date so the stored files are always identical for
+            # identical requests.
+            self.data[0].header["DATE"] = "2017-01-07T00:00:00"
         except requests.exceptions.RequestException as err:
             self.handle_exception(
                 err, "Exception raised trying to get FITS data from " + url
@@ -340,7 +383,7 @@ class SkyModel:
     def write(self, local_filename, **kwargs):
         try:
             self.data.writeto(local_filename, **kwargs)
-        except IOError as err:
+        except (IOError, FileNotFoundError) as err:
             self.handle_exception(err, "Exception raised trying to write fits file ")
 
     def getdata(self):
@@ -372,6 +415,11 @@ class SkyModel:
         }:
             self.fix_observatory()
 
+        fn_data, fn_params = get_cache_filenames(self.params, "skymodel", "fits")
+        if fn_data.exists():
+            self.data = fits.open(fn_data)
+            return
+
         try:
             response = requests.post(
                 self.url, data=json.dumps(self.params), timeout=self.REQUEST_TIMEOUT
@@ -400,6 +448,13 @@ class SkyModel:
                 self.retrieve_data(tmpurl)
             except requests.exceptions.RequestException as err:
                 self.handle_exception(err, "could not retrieve FITS data from server")
+
+            try:
+                self.data.writeto(fn_data)
+                json.dump(self.params, open(fn_params, 'w'))
+            except (PermissionError, FileNotFoundError):
+                # Apparently it is not possible to save here.
+                pass
 
             self.delete_server_tmpdir(tmpdir)
 
