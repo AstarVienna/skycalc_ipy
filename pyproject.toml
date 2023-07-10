@@ -47,6 +47,7 @@ docs = [
     "sphinxcontrib-apidoc",
     "nbsphinx",
     "numpydoc",
+    "matplotlib>=3.2.0",
 ]
 
 [project.urls]
