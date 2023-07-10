@@ -9,7 +9,6 @@ skp = ui.SkyCalc()
 
 
 class TestAlmanacInit:
-
     def test_throws_exception_when_passed_virgin_SkyCalcParams(self):
         with raises(ValueError):
             core.AlmanacQuery(skp)
@@ -18,16 +17,16 @@ class TestAlmanacInit:
         skp.update({"ra": 0, "dec": 0, "date": "2000-1-1T0:0:0", "mjd": None})
         alm = core.AlmanacQuery(skp)
         print(alm.almindic)
-        assert alm.almindic['coord_year'] == 2000
-        assert alm.almindic['coord_ut_sec'] == 0
-        assert alm.almindic['input_type'] == "ut_time"
+        assert alm.almindic["coord_year"] == 2000
+        assert alm.almindic["coord_ut_sec"] == 0
+        assert alm.almindic["input_type"] == "ut_time"
 
     def test_passes_for_valid_SkyCalcParams_with_mjd(self):
         skp.update({"mjd": 0, "date": None})
         alm = core.AlmanacQuery(skp)
         print(alm.almindic)
-        assert alm.almindic['mjd'] == 0
-        assert alm.almindic['input_type'] == "mjd"
+        assert alm.almindic["mjd"] == 0
+        assert alm.almindic["input_type"] == "mjd"
 
     def test_throws_exception_when_date_and_mjd_are_empty(self):
         skp.update({"mjd": None, "date": None})
@@ -37,8 +36,8 @@ class TestAlmanacInit:
     def test_passes_for_date_as_datetime_object(self):
         skp.update({"date": dt(1986, 4, 26, 1, 24)})
         alm = core.AlmanacQuery(skp)
-        assert alm.almindic['coord_ut_min'] == 24
-        assert alm.almindic['input_type'] == "ut_time"
+        assert alm.almindic["coord_ut_min"] == 24
+        assert alm.almindic["input_type"] == "ut_time"
 
     def test_throws_exception_when_date_is_unintelligible(self):
         skp.update({"date": "bogus"})
@@ -49,3 +48,21 @@ class TestAlmanacInit:
         skp.update({"mjd": "bogus"})
         with raises(ValueError):
             core.AlmanacQuery(skp)
+
+class TestLoadDataFromCache:
+    def test_load_skymodel_from_cache(self):
+        """Should load cached data in data directory."""
+        params = {
+            "ra": 11.,
+            "dec": 22.,
+            "date": "1999-01-02T02:03:04",
+            "wdelta": 100.,
+        }
+
+        skymodel = core.SkyModel()
+        skymodel.callwith(params)
+
+        alm = core.AlmanacQuery(params)
+        alm.query()
+
+

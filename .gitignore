@@ -32,5 +32,16 @@ ENV/
 # Generics
 not-included/
 dist/
-*.fits
 build/
+
+# Testing related
+.coverage
+coverage.xml
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+
+# Pylint
+.pylint.d/

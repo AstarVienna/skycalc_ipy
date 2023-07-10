@@ -56,3 +56,9 @@ docs = [
 
 [tool.setuptools]
 packages = ["skycalc_ipy"]
+
+[tool.pytest.ini_options]
+addopts = "--strict-markers"
+markers = [
+    "webtest: marks tests as requiring network (deselect with '-m \"not webtest\"')",
+]

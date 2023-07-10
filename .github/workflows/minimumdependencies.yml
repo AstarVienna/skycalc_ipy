@@ -24,4 +24,4 @@ on:
 
 jobs:
   call-minimum-dependencies:
-    uses: AstarVienna/AnisoCADO/.github/workflows/minimumdependencies.yml@hb/reuseworkflow
+    uses: AstarVienna/DevOps/.github/workflows/minimumdependencies.yml@master
