@@ -43,6 +43,10 @@ on the ESO SkyCalc server. For references to SkyCalc see `ESO SkyCalc`_,
     - `wgrid_mode`: --> `fixed_spectral_resolution`
     - `wres`: --> `1000  wave/dwave`
 
+.. note:: v0.1.4: Drop support for Python 3.7.
+
+    Skycalc now uses `pyproject.toml`, and only supports Python 3.8+.
+
 .. note:: v0.1.3: No longer saves a temporary FITS file to disk.
 
     SkyCalc now uses astropy to download the fits file from the SkyCalc server.
