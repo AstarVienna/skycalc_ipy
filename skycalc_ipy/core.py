@@ -77,7 +77,7 @@ class AlmanacQuery:
             indic = indic.values
 
         self.almdata = None
-        self.almserver = "https://etimecalret-001.eso.org"
+        self.almserver = "https://etimecalret-002.eso.org"
         self.almurl = "/observing/etc/api/skycalc_almanac"
 
         # Left: users keyword (skycalc_cli),
@@ -220,7 +220,7 @@ class SkyModel:
     def __init__(self):
         self.stop_on_errors_and_exceptions = True
         self.data = None
-        self.server = "https://etimecalret-001.eso.org"
+        self.server = "https://etimecalret-002.eso.org"
         self.url = self.server + "/observing/etc/api/skycalc"
         self.deleter_script_url = self.server + "/observing/etc/api/rmtmp"
         self.bugreport_text = ""
