@@ -34,6 +34,14 @@ on the ESO SkyCalc server. For references to SkyCalc see `ESO SkyCalc`_,
    GettingStarted
    Reference API <reference/skycalc_ipy>
 
+.. note:: v0.1.5: Hotfix to replace ESO ETC server URL.
+
+    Skycalc now uses https://etimecalret-002.eso.org as server, #25.
+
+.. note:: v0.1.4: Drop support for Python 3.7.
+
+    Skycalc now uses `pyproject.toml`, and only supports Python 3.8+.
+
 .. note:: v0.1.3: Updated default values for `wmax`, `wgrid_mode`, `wres`
 
     SkyCalc-ipy now uses a logarithmic wavelength binning with R=1000 over the
@@ -42,10 +50,6 @@ on the ESO SkyCalc server. For references to SkyCalc see `ESO SkyCalc`_,
     - `wmax`: --> `30000  # [nm]`
     - `wgrid_mode`: --> `fixed_spectral_resolution`
     - `wres`: --> `1000  wave/dwave`
-
-.. note:: v0.1.4: Drop support for Python 3.7.
-
-    Skycalc now uses `pyproject.toml`, and only supports Python 3.8+.
 
 .. note:: v0.1.3: No longer saves a temporary FITS file to disk.
 
