@@ -114,7 +114,7 @@ class SkyCalc:
 
     def get_sky_spectrum(self, return_type="table", filename=None):
         """
-        Retrieve a fits.HDUList object from the SkyCalc server
+        Retrieve a fits.HDUList object from the SkyCalc server.
 
         The HDUList can be returned in a variety of formats.
 
@@ -138,7 +138,6 @@ class SkyCalc:
         - "fits": hdu (HDUList)
 
         """
-
         from astropy import table
 
         if not self.validate_params():

@@ -37,7 +37,6 @@ def get_cache_filenames(params: Dict, prefix: str, suffix: str):
     2. As set in the `scopesim_data` package.
     3. The `data` directory in this package.
     """
-
     if "SKYCALC_IPY_CACHE_DIR" in environ:
         dir_cache = Path(environ["SKYCALC_IPY_CACHE_DIR"])
     elif isinstance(scopesim_data, ModuleType):
@@ -55,7 +54,7 @@ def get_cache_filenames(params: Dict, prefix: str, suffix: str):
 
 class AlmanacQuery:
     """
-    A class for querying the SkyCalc Almanac
+    A class for querying the SkyCalc Almanac.
 
     Parameters
     ----------
@@ -156,7 +155,7 @@ class AlmanacQuery:
 
     def query(self):
         """
-        Queries the ESO Skycalc server with the parameters in self.almindic
+        Query the ESO Skycalc server with the parameters in self.almindic.
 
         Returns
         -------
@@ -164,7 +163,8 @@ class AlmanacQuery:
             Dictionary with the relevant parameters for the date given
 
         """
-        fn_data, fn_params = get_cache_filenames(self.almindic, "almanacquery", "json")
+        fn_data, fn_params = get_cache_filenames(self.almindic,
+                                                 "almanacquery", "json")
         if fn_data.exists():
             jsondata = json.load(open(fn_data))
         else:
@@ -209,7 +209,7 @@ class AlmanacQuery:
 
 class SkyModel:
     """
-    Class for querying the Advanced SkyModel at ESO
+    Class for querying the Advanced SkyModel at ESO.
 
     Contains all the parameters needed for querying the ESO SkyCalc server.
     The parameters are contained in :attr:`.params` and the returned FITS file
@@ -320,13 +320,12 @@ class SkyModel:
 
     def fix_observatory(self):
         """
-        Converts the human readable observatory name into its ESO ID number
+        Convert the human readable observatory name into its ESO ID number.
 
         The following observatory names are accepted: ``lasilla``, ``paranal``,
         ``armazones`` or ``3060m``, ``highanddry`` or ``5000m``
 
         """
-
         if self.params["observatory"] == "lasilla":
             self.params["observatory"] = "2400"
         elif self.params["observatory"] == "paranal":
@@ -354,7 +353,7 @@ class SkyModel:
         if key == "observatory":
             self.fix_observatory()
 
-    def handle_exception(self, err, msg):
+    def _handle_exception(self, err, msg):
         print(msg)
         print(err)
         print(self.bugreport_text)
@@ -364,15 +363,15 @@ class SkyModel:
             # tool or something like that. However, skycalc_ipy is also used as
             # a library, and libraries should never just exit and this
             # command-line functionality does not seem to exist. So instead,
-            # just raise here. See also handle_error() below.
+            # just raise here. See also _handle_error() below.
             raise
 
     # handle the kind of errors we issue ourselves.
-    def handle_error(self, msg):
+    def _handle_error(self, msg):
         print(msg)
         print(self.bugreport_text)
         if self.stop_on_errors_and_exceptions:
-            # See handle_exception above.
+            # See _handle_exception above.
             raise
 
     def retrieve_data(self, url):
@@ -382,7 +381,7 @@ class SkyModel:
             # identical requests.
             self.data[0].header["DATE"] = "2017-01-07T00:00:00"
         except requests.exceptions.RequestException as err:
-            self.handle_exception(
+            self._handle_exception(
                 err, "Exception raised trying to get FITS data from " + url
             )
 
@@ -390,7 +389,7 @@ class SkyModel:
         try:
             self.data.writeto(local_filename, **kwargs)
         except (IOError, FileNotFoundError) as err:
-            self.handle_exception(err, "Exception raised trying to write fits file ")
+            self._handle_exception(err, "Exception raised trying to write fits file ")
 
     def getdata(self):
         return self.data
@@ -402,9 +401,9 @@ class SkyModel:
             )
             deleter_response = response.text.strip()
             if deleter_response != "ok":
-                self.handle_error("Could not delete server tmpdir " + tmpdir)
+                self._handle_error("Could not delete server tmpdir " + tmpdir)
         except requests.exceptions.RequestException as err:
-            self.handle_exception(
+            self._handle_exception(
                 err, "Exception raised trying to delete tmp dir " + tmpdir
             )
 
@@ -428,7 +427,7 @@ class SkyModel:
                 self.url, data=json.dumps(self.params), timeout=self.REQUEST_TIMEOUT
             )
         except requests.exceptions.RequestException as err:
-            self.handle_exception(
+            self._handle_exception(
                 err, "Exception raised trying to POST request " + self.url
             )
             return
@@ -438,7 +437,7 @@ class SkyModel:
             status = res["status"]
             tmpdir = res["tmpdir"]
         except (KeyError, ValueError) as err:
-            self.handle_exception(
+            self._handle_exception(
                 err, "Exception raised trying to decode server response "
             )
             return
@@ -450,7 +449,7 @@ class SkyModel:
                 # retrive and save FITS data (in memory)
                 self.retrieve_data(tmpurl)
             except requests.exceptions.RequestException as err:
-                self.handle_exception(err, "could not retrieve FITS data from server")
+                self._handle_exception(err, "could not retrieve FITS data from server")
 
             try:
                 self.data.writeto(fn_data)
@@ -462,7 +461,7 @@ class SkyModel:
             self.delete_server_tmpdir(tmpdir)
 
         else:  # print why validation failed
-            self.handle_error("parameter validation error: " + res["error"])
+            self._handle_error("parameter validation error: " + res["error"])
 
         if test:
             # print 'call() returning status:',status
@@ -478,7 +477,7 @@ class SkyModel:
 
     def printparams(self, keys=None):
         """
-        List the values of all, or a subset, of parameters
+        List the values of all, or a subset, of parameters.
 
         Parameters
         ----------
