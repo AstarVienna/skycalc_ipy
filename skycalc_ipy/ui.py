@@ -1,5 +1,8 @@
-import os
-import inspect
+# -*- coding: utf-8 -*-
+"""Skyclc IPY user interface."""
+
+import logging
+from pathlib import Path
 from datetime import datetime as dt
 
 import yaml
@@ -25,8 +28,7 @@ observatory_dict = {
 class SkyCalc:
     def __init__(self, ipt_str=None):
         if ipt_str is None:
-            dirname = os.path.dirname(inspect.getfile(inspect.currentframe()))
-            ipt_str = os.path.join(dirname, "params.yaml")
+            ipt_str = Path(__file__).parent / "params.yaml"
 
         params = load_yaml(ipt_str)
 
@@ -82,10 +84,11 @@ class SkyCalc:
                 pass
 
         if invalid_keys:
-            print("See <SkyCalc>.comments[<key>] for help")
-            print("The following entries are invalid:")
+            logging.warning("See <SkyCalc>.comments[<key>] for help")
+            logging.warning("The following entries are invalid:")
             for key in invalid_keys:
-                print(f"'{key}' : {self.values[key]} : {self.comments[key]}")
+                logging.warning("'%s' : %s : %s", key,
+                                self.values[key], self.comments[key])
 
         return not invalid_keys
 
@@ -208,8 +211,8 @@ class SkyCalc:
                 points=tbl["lam"].data * tbl["lam"].unit,
                 lookup_table=tbl["flux"].data * funit,
             )
-            print(
-                "Warning: synphot doesn't accept surface brightnesses \n"
+            logging.warning(
+                "Synphot doesn't accept surface brightnesses \n"
                 "The resulting spectrum should be multiplied by arcsec-2"
             )
 
@@ -241,11 +244,12 @@ class SkyCalc:
 
 
 def load_yaml(ipt_str):
-    if ".yaml" in ipt_str.lower():
-        if not os.path.exists(ipt_str):
-            raise ValueError(ipt_str + " not found")
+    # TODO: why not just load, what's all of this?
+    if ".yaml" in str(ipt_str).lower():
+        if not ipt_str.exists():
+            raise ValueError(f"{ipt_str} not found")
 
-        with open(ipt_str, "r") as fd:
+        with ipt_str.open("r", encoding="utf-8") as fd:
             fd = "\n".join(fd.readlines())
         opts_dict = yaml.load(fd, Loader=yaml.FullLoader)
     else:
@@ -263,7 +267,7 @@ def get_almanac_data(
     observatory=None,
 ):
     if date is not None and mjd is not None:
-        print("Warning: Both date and mjd are set. Using date")
+        logging.warning("Both date and mjd are set. Using date")
 
     skycalc_params = SkyCalc()
     skycalc_params.values.update({"ra": ra, "dec": dec, "date": date, "mjd": mjd})

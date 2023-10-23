@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Based on the skycalc_cli package.
 
@@ -5,11 +6,11 @@ This modele was taken (mostly unmodified) from ``skycalc_cli`` version 1.1.
 Credit for ``skycalc_cli`` goes to ESO
 """
 
-from __future__ import print_function
+import logging
 
 import hashlib
 import json
-import os
+from os import environ
 from datetime import datetime
 from pathlib import Path
 from typing import Dict
@@ -21,8 +22,11 @@ from astropy.io import fits
 
 try:
     import scopesim_data
-except:
+except ImportError:
     scopesim_data = None
+
+
+CACHE_DIR = Path.home() / ".astar/skycalc_ipy"
 
 
 def get_cache_filenames(params: Dict, prefix: str, suffix: str):
@@ -34,8 +38,8 @@ def get_cache_filenames(params: Dict, prefix: str, suffix: str):
     3. The `data` directory in this package.
     """
 
-    if "SKYCALC_IPY_CACHE_DIR" in os.environ:
-        dir_cache = Path(os.environ["SKYCALC_IPY_CACHE_DIR"])
+    if "SKYCALC_IPY_CACHE_DIR" in environ:
+        dir_cache = Path(environ["SKYCALC_IPY_CACHE_DIR"])
     elif isinstance(scopesim_data, ModuleType):
         dir_cache = scopesim_data.dir_cache_skycalc
     else:
@@ -133,16 +137,18 @@ class AlmanacQuery:
 
         try:
             ra = float(indic["ra"])
-        except ValueError:
-            print("Error: wrong ra format for the Almanac.")
-            raise
+        except ValueError as err:
+            logging.error("Wrong ra format for the Almanac.")
+            logging.exception(err)
+            raise err
         self.almindic["coord_ra"] = ra
 
         try:
             dec = float(indic["dec"])
-        except ValueError:
-            print("Error: wrong dec format for the Almanac.")
-            raise
+        except ValueError as err:
+            logging.error("Wrong dec format for the Almanac.")
+            logging.exception(err)
+            raise err
         self.almindic["coord_dec"] = dec
 
         if "observatory" in indic:
@@ -195,8 +201,8 @@ class AlmanacQuery:
             try:
                 almdata[key] = jsondata[subsection][value]
             except (KeyError, ValueError):
-                print(f"Warning: key \"{subsection}/{value}\" not found in the"
-                      " Almanac response.")
+                logging.warning("Key '%s/%s' not found in Almanac response.",
+                                subsection, value)
 
         return almdata
 
@@ -403,9 +409,6 @@ class SkyModel:
             )
 
     def call(self, test=False):
-        # print 'self.url=',self.url
-        # print 'self.params=',self.params
-
         if self.params["observatory"] in {
             "paranal",
             "lasilla",
@@ -470,8 +473,7 @@ class SkyModel:
             if key in self.params:  # valid
                 self.params[key] = val
             else:
-                pass
-                # print('callwith() ignoring invalid keyword: ', key)
+                logging.debug("Ignoring invalid keyword: %s", key)
         self.call()
 
     def printparams(self, keys=None):
