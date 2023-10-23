@@ -34,6 +34,10 @@ on the ESO SkyCalc server. For references to SkyCalc see `ESO SkyCalc`_,
    GettingStarted
    Reference API <reference/skycalc_ipy>
 
+.. note:: v0.2.0: Hotfix for new ESO ETC server.
+
+    The new ESO ETC server uses different units, which are now used.
+
 .. note:: v0.1.5: Hotfix to replace ESO ETC server URL.
 
     Skycalc now uses https://etimecalret-002.eso.org as server, #25.
