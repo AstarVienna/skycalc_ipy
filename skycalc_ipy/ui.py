@@ -147,10 +147,17 @@ class SkyCalc:
         if filename is not None:
             skm.write(filename)
 
-        tbl = table.Table(skm.data[1].data)
-        tbl["lam"].unit = u.um
+        tbl = table.Table.read(skm.data)
+        if tbl["lam"].unit is None:
+            tbl["lam"].unit = u.um
+
         for colname in tbl.colnames:
             if "flux" in colname:
+                # Somehow, astropy doesn't quite parse the unit correctly.
+                # Still, we shouldn't blindly overwrite it, so at least check.
+                funit = tbl[colname].unit
+                if not str(funit) in ("ph/s/m2/micron/arcsec2", "None"):
+                    raise ValueError(f"Unexpected flux unit: {funit}")
                 tbl[colname].unit = u.Unit("ph s-1 m-2 um-1 arcsec-2")
 
         date_created = dt.now().strftime("%Y-%m-%dT%H:%M:%S")
