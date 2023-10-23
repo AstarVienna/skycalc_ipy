@@ -29,7 +29,7 @@ dependencies = [
     "numpy>=1.18.0",
     "astropy>=4.0",
     "requests>=2.20",
-    "pyyaml>5.2"
+    "pyyaml>=5.3"
 ]
 
 [project.optional-dependencies]
