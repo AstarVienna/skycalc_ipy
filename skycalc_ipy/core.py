@@ -16,7 +16,7 @@ from pathlib import Path
 from typing import Dict
 from types import ModuleType
 
-import requests
+import httpx
 
 from astropy.io import fits
 
@@ -423,17 +423,21 @@ class SkyModel:
             return
 
         try:
-            response = requests.post(
-                self.url, data=json.dumps(self.params), timeout=self.REQUEST_TIMEOUT
+            response = httpx.post(
+                self.url, json=self.params, timeout=self.REQUEST_TIMEOUT
             )
-        except requests.exceptions.RequestException as err:
-            self._handle_exception(
-                err, "Exception raised trying to POST request " + self.url
-            )
-            return
+            response.raise_for_status()
+        except httpx.RequestError as err:
+            logging.exception("An error occurred while requesting %s.",
+                              err.request.url)
+            raise err
+        except httpx.HTTPStatusError as err:
+            logging.error("Error response %s while requesting %s.",
+                          err.response.status_code, err.request.url)
+            raise err
 
         try:
-            res = json.loads(response.text)
+            res = response.json()
             status = res["status"]
             tmpdir = res["tmpdir"]
         except (KeyError, ValueError) as err:
