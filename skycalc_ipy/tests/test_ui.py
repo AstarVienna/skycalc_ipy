@@ -1,5 +1,4 @@
-import os
-import inspect
+from pathlib import Path
 
 import pytest
 from pytest import raises
@@ -17,13 +16,12 @@ skp_small["wdelta"] = 100
 
 class TestLoadYaml:
     def test_finds_file_for_specified_path(self):
-        dirname = os.path.dirname(inspect.getfile(inspect.currentframe()))
-        yaml_dict = ui.load_yaml(os.path.join(dirname, "../params.yaml"))
+        yaml_dict = ui.load_yaml(Path(__file__).parent.parent / "params.yaml")
         assert yaml_dict["season"][0] == 0
 
     def test_throws_exception_for_nonexistent_file(self):
         with raises(ValueError):
-            ui.load_yaml("bogus.yaml")
+            ui.load_yaml(Path("bogus.yaml"))
 
     def test_accepts_string_block_input(self):
         str_yaml = """
