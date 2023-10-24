@@ -40,6 +40,10 @@ def get_cache_dir() -> Path:
             dir_cache = Path(getattr(sim_data, "dir_cache_skycalc"))
         except (ImportError, AttributeError):
             dir_cache = Path.home() / CACHE_DIR_FALLBACK
+
+    if not dir_cache.is_dir():
+        dir_cache.mkdir(parents=True)
+
     return dir_cache
 
 
@@ -194,7 +198,9 @@ class AlmanacQuery:
             Dictionary with the relevant parameters for the date given
 
         """
-        cache_path = get_cache_filenames(self.almindic, "almanacquery", "json")
+        cache_dir = get_cache_dir()
+        cache_name = get_cache_filenames(self.almindic, "almanacquery", "json")
+        cache_path = cache_dir / cache_name
         jsondata = self._get_jsondata(cache_path)
 
         # Find the relevant (key, value)
@@ -414,7 +420,10 @@ class SkyModel:
         }:
             self.fix_observatory()
 
-        cache_path = get_cache_filenames(self.params, "skymodel", "fits")
+        cache_dir = get_cache_dir()
+        cache_name = get_cache_filenames(self.params, "skymodel", "fits")
+        cache_path = cache_dir / cache_name
+
         if cache_path.exists():
             self.data = fits.open(cache_path)
             return
