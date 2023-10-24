@@ -141,17 +141,29 @@ class AlmanacQuery:
             logging.exception(err)
             raise err
         self.almindic["coord_ra"] = ra
+    def _get_jsondata(self, file_path: Path):
+        if file_path.exists():
+            return json.load(file_path.open(encoding="utf-8"))
+
+        url = self.almserver + self.almurl
+
+        response = _send_request(url, self.almindic, self.REQUEST_TIMEOUT)
+        if not response.text:
+            raise ValueError("Empty response.")
+
+        jsondata = response.json()["output"]
+        # Use a fixed date so the stored files are always identical for
+        # identical requests.
+        jsondata["execution_datetime"] = "2017-01-07T00:00:00 UTC"
 
         try:
-            dec = float(indic["dec"])
-        except ValueError as err:
-            logging.error("Wrong dec format for the Almanac.")
-            logging.exception(err)
+            json.dump(jsondata, file_path.open("w", encoding="utf-8"))
+            # json.dump(self.almindic, open(fn_params, 'w'))
+        except (PermissionError, FileNotFoundError) as err:
+            # Apparently it is not possible to save here.
             raise err
-        self.almindic["coord_dec"] = dec
 
-        if "observatory" in indic:
-            self.almindic["observatory"] = indic["observatory"]
+        return jsondata
 
     def query(self):
         """
@@ -163,30 +175,8 @@ class AlmanacQuery:
             Dictionary with the relevant parameters for the date given
 
         """
-        fn_data, fn_params = get_cache_filenames(self.almindic,
-                                                 "almanacquery", "json")
-        if fn_data.exists():
-            jsondata = json.load(open(fn_data))
-        else:
-            url = self.almserver + self.almurl
-
-            response = requests.post(
-                url, json.dumps(self.almindic), timeout=self.REQUEST_TIMEOUT
-            )
-            rawdata = response.text
-
-            jsondata1 = json.loads(rawdata)
-            jsondata = jsondata1["output"]
-            # Use a fixed date so the stored files are always identical for
-            # identical requests.
-            jsondata["execution_datetime"] = "2017-01-07T00:00:00 UTC"
-
-            try:
-                json.dump(jsondata, open(fn_data, 'w'))
-                json.dump(self.almindic, open(fn_params, 'w'))
-            except (PermissionError, FileNotFoundError):
-                # Apparently it is not possible to save here.
-                pass
+        cache_path = get_cache_filenames(self.almindic, "almanacquery", "json")
+        jsondata = self._get_jsondata(cache_path)
 
         # Find the relevant (key, value)
         almdata = {}
@@ -228,8 +218,9 @@ class SkyModel:
         self.data = None
         self.server = "https://etimecalret-002.eso.org"
         self.url = self.server + "/observing/etc/api/skycalc"
+        self.data_url = self.server + "/observing/etc/tmp/"
         self.deleter_script_url = self.server + "/observing/etc/api/rmtmp"
-        self.bugreport_text = ""
+        self._last_status = ""
         self.tmpdir = ""
         self.params = {
             # Airmass. Alt and airmass are coupled through the plane parallel
@@ -380,16 +371,17 @@ class SkyModel:
             # Use a fixed date so the stored files are always identical for
             # identical requests.
             self.data[0].header["DATE"] = "2017-01-07T00:00:00"
-        except requests.exceptions.RequestException as err:
-            self._handle_exception(
-                err, "Exception raised trying to get FITS data from " + url
-            )
+        except httpx.HTTPError as err:
+            logging.error("Exception raised trying to get FITS data from %s",
+                          url)
+            logging.exception(err)
 
     def write(self, local_filename, **kwargs):
         try:
             self.data.writeto(local_filename, **kwargs)
         except (IOError, FileNotFoundError) as err:
-            self._handle_exception(err, "Exception raised trying to write fits file ")
+            logging.error("Exception raised trying to write fits file.")
+            logging.exception(err)
 
     def getdata(self):
         return self.data
@@ -399,13 +391,14 @@ class SkyModel:
             response = requests.get(
                 self.deleter_script_url + "?d=" + tmpdir, timeout=self.REQUEST_TIMEOUT
             )
-            deleter_response = response.text.strip()
+            deleter_response = response.text.strip().lower()
             if deleter_response != "ok":
-                self._handle_error("Could not delete server tmpdir " + tmpdir)
-        except requests.exceptions.RequestException as err:
-            self._handle_exception(
-                err, "Exception raised trying to delete tmp dir " + tmpdir
-            )
+                logging.error("Could not delete server tmpdir %s: %s",
+                              tmpdir, deleter_response)
+        except httpx.HTTPError as err:
+            logging.error("Exception raised trying to delete tmp dir %s",
+                          tmpdir)
+            logging.exception(err)
 
     def call(self, test=False):
         if self.params["observatory"] in {
@@ -417,61 +410,48 @@ class SkyModel:
         }:
             self.fix_observatory()
 
-        fn_data, fn_params = get_cache_filenames(self.params, "skymodel", "fits")
-        if fn_data.exists():
-            self.data = fits.open(fn_data)
+        cache_path = get_cache_filenames(self.params, "skymodel", "fits")
+        if cache_path.exists():
+            self.data = fits.open(cache_path)
             return
 
-        try:
-            response = httpx.post(
-                self.url, json=self.params, timeout=self.REQUEST_TIMEOUT
-            )
-            response.raise_for_status()
-        except httpx.RequestError as err:
-            logging.exception("An error occurred while requesting %s.",
-                              err.request.url)
-            raise err
-        except httpx.HTTPStatusError as err:
-            logging.error("Error response %s while requesting %s.",
-                          err.response.status_code, err.request.url)
-            raise err
+        response = _send_request(self.url, self.params, self.REQUEST_TIMEOUT)
 
         try:
             res = response.json()
             status = res["status"]
             tmpdir = res["tmpdir"]
         except (KeyError, ValueError) as err:
-            self._handle_exception(
-                err, "Exception raised trying to decode server response "
-            )
-            return
+            logging.error("Exception raised trying to decode server response.")
+            logging.exception(err)
+            raise err
 
-        tmpurl = self.server + "/observing/etc/tmp/" + tmpdir + "/skytable.fits"
+        self._last_status = status
 
         if status == "success":
             try:
                 # retrive and save FITS data (in memory)
-                self.retrieve_data(tmpurl)
-            except requests.exceptions.RequestException as err:
-                self._handle_exception(err, "could not retrieve FITS data from server")
+                self._retrieve_data(self.data_url + tmpdir + "/skytable.fits")
+            except httpx.HTTPError as err:
+                logging.error("Could not retrieve FITS data from server.")
+                logging.exception(err)
+                raise err
 
             try:
-                self.data.writeto(fn_data)
-                json.dump(self.params, open(fn_params, 'w'))
+                self.data.writeto(cache_path)
+                # with fn_params.open("w", encoding="utf-8") as file:
+                #     json.dump(self.params, file)
             except (PermissionError, FileNotFoundError):
                 # Apparently it is not possible to save here.
                 pass
 
-            self.delete_server_tmpdir(tmpdir)
+            self._delete_server_tmpdir(tmpdir)
 
         else:  # print why validation failed
-            self._handle_error("parameter validation error: " + res["error"])
-
-        if test:
-            # print 'call() returning status:',status
-            return status
+            logging.error("Parameter validation error: %s", res["error"])
 
     def callwith(self, newparams):
+        """Deprecated feature."""
         for key, val in newparams.items():
             if key in self.params:  # valid
                 self.params[key] = val
@@ -494,3 +474,18 @@ class SkyModel:
 
     def reset(self):
         self.__init__()
+
+
+def _send_request(url: str, params: Mapping, timeout: int = 2):
+    try:
+        response = httpx.post(url, json=params, timeout=timeout)
+        response.raise_for_status()
+    except httpx.RequestError as err:
+        logging.exception("An error occurred while requesting %s.",
+                          err.request.url)
+        raise err
+    except httpx.HTTPStatusError as err:
+        logging.error("Error response %s while requesting %s.",
+                      err.response.status_code, err.request.url)
+        raise err
+    return response
