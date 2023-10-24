@@ -25,7 +25,7 @@ class TestLoadYaml:
 
     def test_accepts_string_block_input(self):
         str_yaml = """
-        params : 
+        params :
         - hello
         - world
         """
@@ -216,7 +216,9 @@ class TestDocExamples:
     def test_example(self):
         skycalc = ui.SkyCalc()
         skycalc.get_almanac_data(
-            ra=83.8221, dec=-5.3911, date="2017-12-24T04:00:00", update_values=True
+            ra=83.8221, dec=-5.3911,
+            date="2017-12-24T04:00:00",
+            update_values=True
         )
         tbl = skycalc.get_sky_spectrum()
         assert len(tbl) == 4606

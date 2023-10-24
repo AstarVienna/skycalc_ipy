@@ -158,7 +158,7 @@ class SkyCalc:
                 # Somehow, astropy doesn't quite parse the unit correctly.
                 # Still, we shouldn't blindly overwrite it, so at least check.
                 funit = tbl[colname].unit
-                if not str(funit) in ("ph/s/m2/micron/arcsec2", "None"):
+                if str(funit) not in ("ph/s/m2/micron/arcsec2", "None"):
                     raise ValueError(f"Unexpected flux unit: {funit}")
                 tbl[colname].unit = u.Unit("ph s-1 m-2 um-1 arcsec-2")
 

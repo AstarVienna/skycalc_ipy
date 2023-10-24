@@ -418,9 +418,9 @@ class SkyModel:
         if cache_path.exists():
             self.data = fits.open(cache_path)
             return
-
+    
         response = _send_request(self.url, self.params, self.REQUEST_TIMEOUT)
-
+    
         try:
             res = response.json()
             status = res["status"]
@@ -429,9 +429,9 @@ class SkyModel:
             logging.error("Exception raised trying to decode server response.")
             logging.exception(err)
             raise err
-
+    
         self._last_status = status
-
+    
         if status == "success":
             try:
                 # retrive and save FITS data (in memory)
@@ -440,7 +440,7 @@ class SkyModel:
                 logging.error("Could not retrieve FITS data from server.")
                 logging.exception(err)
                 raise err
-
+    
             try:
                 self.data.writeto(cache_path)
                 # with fn_params.open("w", encoding="utf-8") as file:
@@ -448,12 +448,13 @@ class SkyModel:
             except (PermissionError, FileNotFoundError):
                 # Apparently it is not possible to save here.
                 pass
-
+    
             self._delete_server_tmpdir(tmpdir)
-
+    
         else:  # print why validation failed
             logging.error("Parameter validation error: %s", res["error"])
 
+        
     def callwith(self, newparams):
         """Deprecated feature."""
         for key, val in newparams.items():
