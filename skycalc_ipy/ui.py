@@ -144,7 +144,7 @@ class SkyCalc:
             raise ValueError("Object contains invalid parameters. Not calling ESO")
 
         skm = SkyModel()
-        skm.callwith(self.values)
+        skm(self.values)
         self.last_skycalc_response = skm.data
         if filename is not None:
             skm.write(filename)

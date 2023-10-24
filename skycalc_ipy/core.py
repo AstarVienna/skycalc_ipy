@@ -409,8 +409,16 @@ class SkyModel:
                           tmpdir)
             logging.exception(err)
 
-    def call(self):
-        """Deprecated feature."""
+    def __call__(self, **kwargs):
+        """Send server request."""
+        if kwargs:
+            logging.info("Setting new parameters: %s", kwargs)
+        for key, val in kwargs.items():
+            if key in self.params:  # valid
+                self.params[key] = val
+            else:
+                logging.debug("Ignoring invalid keyword: %s", key)
+        
         if self.params["observatory"] in {
             "paranal",
             "lasilla",
@@ -464,14 +472,14 @@ class SkyModel:
             logging.error("Parameter validation error: %s", res["error"])
 
         
+
+    def call(self):
+        """Deprecated feature."""
+        self()
+
     def callwith(self, newparams):
         """Deprecated feature."""
-        for key, val in newparams.items():
-            if key in self.params:  # valid
-                self.params[key] = val
-            else:
-                logging.debug("Ignoring invalid keyword: %s", key)
-        self.call()
+        self(**newparams)
 
     def printparams(self, keys=None):
         """
