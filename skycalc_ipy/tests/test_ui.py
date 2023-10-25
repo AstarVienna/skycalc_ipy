@@ -18,11 +18,6 @@ def skp():
 
 
 @pytest.fixture
-def skp2():
-    return ui.SkyCalc()
-
-
-@pytest.fixture
 def skp_small():
     skps = ui.SkyCalc()
     skps["wdelta"] = 100
