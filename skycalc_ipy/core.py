@@ -7,6 +7,7 @@ Credit for ``skycalc_cli`` goes to ESO
 """
 
 import logging
+import warnings
 
 import hashlib
 import json
@@ -340,6 +341,16 @@ class SkyModel:
         ``armazones`` or ``3060m``, ``highanddry`` or ``5000m``
 
         """
+        # FIXME: DO WE ALWAYS WANT TO RAISE WHEN IT'S NOT ONE OF THOSE???
+        if self.params["observatory"] not in {
+            "paranal",
+            "lasilla",
+            "armazones",
+            "3060m",
+            "5000m",
+        }:
+            return  # nothing to do
+
         if self.params["observatory"] == "lasilla":
             self.params["observatory"] = "2400"
         elif self.params["observatory"] == "paranal":
@@ -358,6 +369,7 @@ class SkyModel:
             raise ValueError(
                 "Wrong Observatory name, please refer to the documentation."
             )
+        return  # for consistency
 
     def __getitem__(self, item):
         return self.params[item]
@@ -387,8 +399,7 @@ class SkyModel:
             logging.exception(err)
 
     def getdata(self):
-        """Deprecated feature."""
-        import warnings
+        """Deprecated feature, just use the .data attribute."""
         warnings.warn("The .getdata method is deprecated and will be removed "
                       "in a future release. Use the identical .data attribute "
                       "instead.", DeprecationWarning, stacklevel=2)
@@ -407,24 +418,19 @@ class SkyModel:
                           tmpdir)
             logging.exception(err)
 
+    def _update_params(self, updated: Mapping) -> None:
+        param_keys = self.params.keys()
+        new_keys = updated.keys()
+        self.params.update((key, kwargs[key]) for key in param_keys & new_keys)
+        logging.debug("Ignoring invalid keywords: %s", new_keys - param_keys)
+
     def __call__(self, **kwargs):
         """Send server request."""
         if kwargs:
             logging.info("Setting new parameters: %s", kwargs)
-        for key, val in kwargs.items():
-            if key in self.params:  # valid
-                self.params[key] = val
-            else:
-                logging.debug("Ignoring invalid keyword: %s", key)
-        
-        if self.params["observatory"] in {
-            "paranal",
-            "lasilla",
-            "armazones",
-            "3060m",
-            "5000m",
-        }:
-            self.fix_observatory()
+
+        self._update_params()
+        self.fix_observatory()
 
         cache_dir = get_cache_dir()
         cache_name = get_cache_filenames(self.params, "skymodel", "fits")
@@ -433,9 +439,9 @@ class SkyModel:
         if cache_path.exists():
             self.data = fits.open(cache_path)
             return
-    
+
         response = _send_request(self.url, self.params, self.REQUEST_TIMEOUT)
-    
+
         try:
             res = response.json()
             status = res["status"]
@@ -444,9 +450,9 @@ class SkyModel:
             logging.error("Exception raised trying to decode server response.")
             logging.exception(err)
             raise err
-    
+
         self._last_status = status
-    
+
         if status == "success":
             try:
                 # retrive and save FITS data (in memory)
@@ -455,7 +461,7 @@ class SkyModel:
                 logging.error("Could not retrieve FITS data from server.")
                 logging.exception(err)
                 raise err
-    
+
             try:
                 self.data.writeto(cache_path)
                 # with fn_params.open("w", encoding="utf-8") as file:
@@ -463,20 +469,26 @@ class SkyModel:
             except (PermissionError, FileNotFoundError):
                 # Apparently it is not possible to save here.
                 pass
-    
+
             self._delete_server_tmpdir(tmpdir)
-    
+
         else:  # print why validation failed
             logging.error("Parameter validation error: %s", res["error"])
 
-        
 
     def call(self):
-        """Deprecated feature."""
+        """Deprecated feature, just call the instance."""
+        warnings.warn("The .call() method is deprecated and will be removed "
+                      "in a future release. Please simply call the instance.",
+                      DeprecationWarning, stacklevel=2)
         self()
 
     def callwith(self, newparams):
-        """Deprecated feature."""
+        """Deprecated feature, just call the instance."""
+        warnings.warn("The .callwith(args) method is deprecated and will be "
+                      "removed in a future release. Please simply call the "
+                      "instance with optional kwargs instead.",
+                      DeprecationWarning, stacklevel=2)
         self(**newparams)
 
     def printparams(self, keys=None):
