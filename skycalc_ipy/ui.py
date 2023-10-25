@@ -25,11 +25,12 @@ observatory_dict = {
     "highanddry": "5000",
 }
 
+PATH_HERE = Path(__file__).parent
 
 class SkyCalc:
     def __init__(self, ipt_str=None):
         if ipt_str is None:
-            ipt_str = Path(__file__).parent / "params.yaml"
+            ipt_str = PATH_HERE / "params.yaml"
 
         params = load_yaml(ipt_str)
 
