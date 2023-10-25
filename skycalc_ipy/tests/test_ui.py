@@ -217,13 +217,13 @@ class TestFunctionGetAlmanacData:
         assert len(out_dict) == 9
 
     @pytest.mark.webtest
-    def test_take_date_only_if_date_and_mjd_are_valid(self, capsys):
+    def test_take_date_only_if_date_and_mjd_are_valid(self):
         out_dict_date = ui.get_almanac_data(ra=180, dec=0, date="2000-1-1T0:0:0")
-        out_dict_both = ui.get_almanac_data(
-            ra=180, dec=0, mjd=50000, date="2000-1-1T0:0:0"
-        )
-        output = capsys.readouterr()[0].strip()
-        assert output == "Warning: Both date and mjd are set. Using date"
+        with pytest.warns(UserWarning) as record:
+            out_dict_both = ui.get_almanac_data(
+                ra=180, dec=0, mjd=50000, date="2000-1-1T0:0:0"
+            )
+        assert record[0].message.args[0] == "Both date and mjd are set. Using date"
         assert out_dict_both == out_dict_date
 
 

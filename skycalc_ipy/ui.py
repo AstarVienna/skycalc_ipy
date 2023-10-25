@@ -2,6 +2,7 @@
 """Skyclc IPY user interface."""
 
 import logging
+import warnings
 from pathlib import Path
 from datetime import datetime as dt
 
@@ -266,7 +267,8 @@ def get_almanac_data(
     observatory=None,
 ):
     if date is not None and mjd is not None:
-        logging.warning("Both date and mjd are set. Using date")
+        warnings.warn("Both date and mjd are set. Using date",
+                      UserWarning, stacklevel=2)
 
     skycalc_params = SkyCalc()
     skycalc_params.values.update({"ra": ra, "dec": dec, "date": date, "mjd": mjd})
