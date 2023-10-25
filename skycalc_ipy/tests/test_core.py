@@ -60,7 +60,7 @@ class TestLoadDataFromCache:
         }
 
         skymodel = core.SkyModel()
-        skymodel(params)
+        skymodel(**params)
 
         alm = core.AlmanacQuery(params)
         alm.query()
