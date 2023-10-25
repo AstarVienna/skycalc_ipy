@@ -108,6 +108,9 @@ class AlmanacQuery(ESOQueryBase):
     """
 
     def __init__(self, indic):
+        # FIXME: This basically checks isinstance(indic, ui.SkyCalc), but we
+        #        can't import that because it would create a circual import.
+        # TODO: Find a better way to do this!!
         if hasattr(indic, "defaults"):
             indic = indic.values
 
@@ -207,7 +210,7 @@ class AlmanacQuery(ESOQueryBase):
 
         return jsondata
 
-    def query(self):
+    def __call__(self):
         """
         Query the ESO Skycalc server with the parameters in self.params.
 
@@ -239,6 +242,13 @@ class AlmanacQuery(ESOQueryBase):
                                 subsection, value)
 
         return almdata
+
+    def query(self):
+        """Deprecated feature. Class is now callable, use that instead."""
+        warnings.warn("The .query() method is deprecated and will be removed "
+                      "in a future release. Please simply call the instance.",
+                      DeprecationWarning, stacklevel=2)
+        return self()
 
 
 class SkyModel(ESOQueryBase):

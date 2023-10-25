@@ -279,7 +279,7 @@ def get_almanac_data(
         skycalc_params.values["observatory"] = observatory
     skycalc_params.validate_params()
     alm = AlmanacQuery(skycalc_params.values)
-    response = alm.query()
+    response = alm()
 
     if return_full_dict:
         skycalc_params.values.update(response)
