@@ -9,6 +9,9 @@ from astropy.io import fits
 import synphot as sp
 
 
+PATH_HERE = Path(__file__).parent
+
+
 @pytest.fixture
 def skp():
     return ui.SkyCalc()
@@ -34,7 +37,7 @@ def basic_almanac_no_update(skp):
 
 class TestLoadYaml:
     def test_finds_file_for_specified_path(self):
-        yaml_dict = ui.load_yaml(Path(__file__).parent.parent / "params.yaml")
+        yaml_dict = ui.load_yaml(PATH_HERE.parent / "params.yaml")
         assert yaml_dict["season"][0] == 0
 
     def test_throws_exception_for_nonexistent_file(self):
