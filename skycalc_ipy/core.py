@@ -189,8 +189,6 @@ class AlmanacQuery(ESOQueryBase):
         if file_path.exists():
             return json.load(file_path.open(encoding="utf-8"))
 
-        url = self.BASE_URL + self.url
-
         response = self._send_request()
         if not response.text:
             raise ValueError("Empty response.")
@@ -349,7 +347,7 @@ class SkyModel(ESOQueryBase):
             "lsf_boxcar_fwhm": 5.0,  # wavelength bins float > 0
             "observatory": "paranal",  # paranal
         }
-    
+
         super().__init__("/api/skycalc", params)
 
     def fix_observatory(self):
