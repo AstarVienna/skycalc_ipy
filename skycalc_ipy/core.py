@@ -111,7 +111,7 @@ class AlmanacQuery(ESOQueryBase):
         if hasattr(indic, "defaults"):
             indic = indic.values
 
-        super().__init__("/api//skycalc_almanac", indic)
+        super().__init__("/api//skycalc_almanac", {})
 
         # Left: users keyword (skycalc_cli),
         # Right: skycalc Almanac output keywords
