@@ -16,6 +16,7 @@ from .core import AlmanacQuery, SkyModel
 
 __all__ = ["SkyCalc"]
 
+# TODO: this isn't used, but something VERY similar is done in core......
 observatory_dict = {
     "lasilla": "2400",
     "paranal": "2640",
@@ -278,8 +279,7 @@ def get_almanac_data(
     if observatory is not None:
         skycalc_params.values["observatory"] = observatory
     skycalc_params.validate_params()
-    alm = AlmanacQuery(skycalc_params.values)
-    response = alm()
+    response = AlmanacQuery(skycalc_params.values)()
 
     if return_full_dict:
         skycalc_params.values.update(response)
