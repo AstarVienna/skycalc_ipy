@@ -1,4 +1,5 @@
 from pathlib import Path
+from collections.abc import Sequence, Mapping
 
 import pytest
 from pytest import raises
@@ -52,7 +53,7 @@ class TestLoadYaml:
 
 class TestSkycalcParamsInit:
     def test_loads_default_when_no_file_given(self, skp):
-        assert type(skp.defaults) == dict
+        assert isinstance(skp.defaults, Mapping)
         assert skp.defaults["observatory"] == "paranal"
         assert skp.allowed["therm_t2"] == 0
 
@@ -77,29 +78,29 @@ class TestSkycalcParamsInit:
         assert output == "iarmass not found"
 
     def test_keys_returns_list_of_keys(self, skp):
-        assert type(skp.keys) == list
+        assert isinstance(skp.keys, Sequence)
         assert "observatory" in skp.keys
 
 
 class TestSkycalcParamsValidateMethod:
     def test_returns_true_for_all_good(self, skp):
-        assert skp.validate_params() is True
+        assert skp.validate_params()
 
     def test_returns_false_for_bung_YN_flag(self, skp):
         skp["incl_starlight"] = "Bogus"
-        assert skp.validate_params() is False
+        assert not skp.validate_params()
 
     def test_returns_false_for_bung_string_in_array(self, skp):
         skp["lsf_type"] = "Bogus"
-        assert skp.validate_params() is False
+        assert not skp.validate_params()
 
     def test_returns_false_for_value_outside_range(self, skp):
         skp["airmass"] = 0.5
-        assert skp.validate_params() is False
+        assert not skp.validate_params()
 
     def test_returns_false_for_value_below_zero(self, skp):
         skp["lsf_boxcar_fwhm"] = -5.0
-        assert skp.validate_params() is False
+        assert not skp.validate_params()
 
 
 class TestSkyCalcParamsGetSkySpectrum:
@@ -195,7 +196,7 @@ class TestFunctionGetAlmanacData:
         out_dict = ui.get_almanac_data(
             ra=180, dec=0, date="2000-1-1T0:0:0", observatory="lasilla"
         )
-        assert type(out_dict) == dict
+        assert isinstance(out_dict, Mapping)
         assert len(out_dict) == 9
         assert out_dict["observatory"] == "lasilla"
 
@@ -204,7 +205,7 @@ class TestFunctionGetAlmanacData:
         out_dict = ui.get_almanac_data(
             ra=180, dec=0, date="2000-1-1T0:0:0", return_full_dict=True
         )
-        assert type(out_dict) == dict
+        assert isinstance(out_dict, Mapping)
         assert len(out_dict) == 39
         assert type(out_dict["moon_sun_sep"]) == float
 
@@ -213,7 +214,7 @@ class TestFunctionGetAlmanacData:
         out_dict = ui.get_almanac_data(
             ra=180, dec=0, date="2000-1-1T0:0:0", return_full_dict=False
         )
-        assert type(out_dict) == dict
+        assert isinstance(out_dict, Mapping)
         assert len(out_dict) == 9
 
     @pytest.mark.webtest
