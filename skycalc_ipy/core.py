@@ -48,19 +48,45 @@ def get_cache_dir() -> Path:
     return dir_cache
 
 
-def get_cache_filenames(params: Mapping, prefix: str, suffix: str) -> str:
-    """Produce filename from hass of parameters.
-    Using three underscores between the key-value pairs and two underscores
-    between the key and the value.
-    """
-    akey = "___".join(f"{k}__{v}" for k, v in params.items())
-    ahash = hashlib.sha256(akey.encode("utf-8")).hexdigest()
-    fname = f"{prefix}_{ahash}.{suffix}"
-    # fn_params = fn_data.with_suffix(".params.json")
-    return fname#, fn_params
+class ESOQueryBase:
+    """Base class for queries to ESO skycalc server."""
+
+    REQUEST_TIMEOUT = 2  # Time limit (in seconds) for server response
+    BASE_URL = "https://etimecalret-002.eso.org/observing/etc"
+
+    def __init__(self, url, params):
+        self.url = url
+        self.params = params
+
+    def _send_request(self) -> httpx.Response:
+        try:
+            with httpx.Client(base_url=self.BASE_URL,
+                              timeout=self.REQUEST_TIMEOUT) as client:
+                response = client.post(self.url, json=self.params)
+            response.raise_for_status()
+        except httpx.RequestError as err:
+            logging.exception("An error occurred while requesting %s.",
+                              err.request.url)
+            raise err
+        except httpx.HTTPStatusError as err:
+            logging.error("Error response %s while requesting %s.",
+                          err.response.status_code, err.request.url)
+            raise err
+        return response
+
+    def get_cache_filenames(self, prefix: str, suffix: str) -> str:
+        """Produce filename from hass of parameters.
+        Using three underscores between the key-value pairs and two underscores
+        between the key and the value.
+        """
+        akey = "___".join(f"{k}__{v}" for k, v in self.params.items())
+        ahash = hashlib.sha256(akey.encode("utf-8")).hexdigest()
+        fname = f"{prefix}_{ahash}.{suffix}"
+        # fn_params = fn_data.with_suffix(".params.json")
+        return fname#, fn_params
 
 
-class AlmanacQuery:
+class AlmanacQuery(ESOQueryBase):
     """
     A class for querying the SkyCalc Almanac.
 
@@ -81,14 +107,11 @@ class AlmanacQuery:
 
     """
 
-    REQUEST_TIMEOUT = 2  # Time limit (in seconds) for server response
-
     def __init__(self, indic):
         if hasattr(indic, "defaults"):
             indic = indic.values
 
-        self.base_url = "https://etimecalret-002.eso.org"
-        self.url = "/observing/etc/api/skycalc_almanac"
+        super().__init__("/api//skycalc_almanac", indic)
 
         # Left: users keyword (skycalc_cli),
         # Right: skycalc Almanac output keywords
@@ -104,7 +127,6 @@ class AlmanacQuery:
             "observatory": "observatory",
         }
 
-        self.params = {}
         # The Almanac needs:
         # coord_ra      : float [deg]
         # coord_dec     : float [deg]
@@ -168,9 +190,9 @@ class AlmanacQuery:
         if file_path.exists():
             return json.load(file_path.open(encoding="utf-8"))
 
-        url = self.base_url + self.url
+        url = self.BASE_URL + self.url
 
-        response = _send_request(url, self.params, self.REQUEST_TIMEOUT)
+        response = self._send_request()
         if not response.text:
             raise ValueError("Empty response.")
 
@@ -199,7 +221,7 @@ class AlmanacQuery:
 
         """
         cache_dir = get_cache_dir()
-        cache_name = get_cache_filenames(self.params, "almanacquery", "json")
+        cache_name = self.get_cache_filenames("almanacquery", "json")
         cache_path = cache_dir / cache_name
         jsondata = self._get_jsondata(cache_path)
 
@@ -222,7 +244,7 @@ class AlmanacQuery:
         return almdata
 
 
-class SkyModel:
+class SkyModel(ESOQueryBase):
     """
     Class for querying the Advanced SkyModel at ESO.
 
@@ -236,17 +258,13 @@ class SkyModel:
 
     """
 
-    REQUEST_TIMEOUT = 2  # Time limit (in seconds) for server response
-
     def __init__(self):
         self.data = None
-        self.base_url = "https://etimecalret-002.eso.org"
-        self.url = self.base_url + "/observing/etc/api/skycalc"
-        self.data_url = self.base_url + "/observing/etc/tmp/"
-        self.deleter_script_url = self.base_url + "/observing/etc/api/rmtmp"
+        self.data_url = "/tmp"
+        self.deleter_script_url = "/api/rmtmp"
         self._last_status = ""
         self.tmpdir = ""
-        self.params = {
+        params = {
             # Airmass. Alt and airmass are coupled through the plane parallel
             # approximation airmass=sec(z), z being the zenith distance
             # z=90-Alt
@@ -332,6 +350,8 @@ class SkyModel:
             "lsf_boxcar_fwhm": 5.0,  # wavelength bins float > 0
             "observatory": "paranal",  # paranal
         }
+    
+        super().__init__("/api/skycalc", params)
 
     def fix_observatory(self):
         """
@@ -419,28 +439,28 @@ class SkyModel:
             logging.exception(err)
 
     def _update_params(self, updated: Mapping) -> None:
-        param_keys = self.params.keys()
+        par_keys = self.params.keys()
         new_keys = updated.keys()
-        self.params.update((key, kwargs[key]) for key in param_keys & new_keys)
-        logging.debug("Ignoring invalid keywords: %s", new_keys - param_keys)
+        self.params.update((key, updated[key]) for key in par_keys & new_keys)
+        logging.debug("Ignoring invalid keywords: %s", new_keys - par_keys)
 
     def __call__(self, **kwargs):
         """Send server request."""
         if kwargs:
             logging.info("Setting new parameters: %s", kwargs)
 
-        self._update_params()
+        self._update_params(kwargs)
         self.fix_observatory()
 
         cache_dir = get_cache_dir()
-        cache_name = get_cache_filenames(self.params, "skymodel", "fits")
+        cache_name = self.get_cache_filenames("skymodel", "fits")
         cache_path = cache_dir / cache_name
 
         if cache_path.exists():
             self.data = fits.open(cache_path)
             return
 
-        response = _send_request(self.url, self.params, self.REQUEST_TIMEOUT)
+        response = self._send_request()
 
         try:
             res = response.json()
@@ -503,18 +523,3 @@ class SkyModel:
         """
         for key in keys or self.params.keys():
             print(f"  {key}: {self.params[key]}")
-
-
-def _send_request(url: str, params: Mapping, timeout: int = 2):
-    try:
-        response = httpx.post(url, json=params, timeout=timeout)
-        response.raise_for_status()
-    except httpx.RequestError as err:
-        logging.exception("An error occurred while requesting %s.",
-                          err.request.url)
-        raise err
-    except httpx.HTTPStatusError as err:
-        logging.error("Error response %s while requesting %s.",
-                      err.response.status_code, err.request.url)
-        raise err
-    return response
