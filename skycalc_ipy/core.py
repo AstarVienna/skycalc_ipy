@@ -178,12 +178,11 @@ class AlmanacQuery(ESOQueryBase):
         try:
             self.params[f"coord_{which}"] = float(indic[which])
         except KeyError as err:
-            logging.error("%s coordinate not given for the Almanac.", which)
-            logging.exception(err)
+            logging.exception("%s coordinate not given for the Almanac.",
+                              which)
             raise err
         except ValueError as err:
-            logging.error("Wrong %s format for the Almanac.", which)
-            logging.exception(err)
+            logging.exception("Wrong %s format for the Almanac.", which)
             raise err
 
     def _get_jsondata(self, file_path: Path):
@@ -405,18 +404,16 @@ class SkyModel(ESOQueryBase):
             # Use a fixed date so the stored files are always identical for
             # identical requests.
             self.data[0].header["DATE"] = "2017-01-07T00:00:00"
-        except httpx.HTTPError as err:
-            logging.error("Exception raised trying to get FITS data from %s",
-                          url)
-            logging.exception(err)
+        except httpx.HTTPError:
+            logging.exception(
+                "Exception raised trying to get FITS data from %s", url)
 
     def write(self, local_filename, **kwargs):
         """Write data to file."""
         try:
             self.data.writeto(local_filename, **kwargs)
-        except (IOError, FileNotFoundError) as err:
-            logging.error("Exception raised trying to write fits file.")
-            logging.exception(err)
+        except (IOError, FileNotFoundError):
+            logging.exception("Exception raised trying to write fits file.")
 
     def getdata(self):
         """Deprecated feature, just use the .data attribute."""
@@ -433,10 +430,9 @@ class SkyModel(ESOQueryBase):
             if deleter_response != "ok":
                 logging.error("Could not delete server tmpdir %s: %s",
                               tmpdir, deleter_response)
-        except httpx.HTTPError as err:
-            logging.error("Exception raised trying to delete tmp dir %s",
-                          tmpdir)
-            logging.exception(err)
+        except httpx.HTTPError:
+            logging.exception("Exception raised trying to delete tmp dir %s",
+                              tmpdir)
 
     def _update_params(self, updated: Mapping) -> None:
         par_keys = self.params.keys()
@@ -467,8 +463,8 @@ class SkyModel(ESOQueryBase):
             status = res["status"]
             tmpdir = res["tmpdir"]
         except (KeyError, ValueError) as err:
-            logging.error("Exception raised trying to decode server response.")
-            logging.exception(err)
+            logging.exception(
+                "Exception raised trying to decode server response.")
             raise err
 
         self._last_status = status
@@ -478,8 +474,7 @@ class SkyModel(ESOQueryBase):
                 # retrive and save FITS data (in memory)
                 self._retrieve_data(self.data_url + tmpdir + "/skytable.fits")
             except httpx.HTTPError as err:
-                logging.error("Could not retrieve FITS data from server.")
-                logging.exception(err)
+                logging.exception("Could not retrieve FITS data from server.")
                 raise err
 
             try:
