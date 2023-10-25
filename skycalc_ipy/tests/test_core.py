@@ -25,15 +25,15 @@ class TestAlmanacInit:
     def test_passes_for_valid_SkyCalcParams_with_date(self, skp):
         skp.update({"ra": 0, "dec": 0, "date": "2000-1-1T0:0:0", "mjd": None})
         alm = core.AlmanacQuery(skp)
-        assert alm.almindic["coord_year"] == 2000
-        assert alm.almindic["coord_ut_sec"] == 0
-        assert alm.almindic["input_type"] == "ut_time"
+        assert alm.params["coord_year"] == 2000
+        assert alm.params["coord_ut_sec"] == 0
+        assert alm.params["input_type"] == "ut_time"
 
     def test_passes_for_valid_SkyCalcParams_with_mjd(self, skp_basic):
         skp_basic.update({"mjd": 0, "date": None})
         alm = core.AlmanacQuery(skp_basic)
-        assert alm.almindic["mjd"] == 0
-        assert alm.almindic["input_type"] == "mjd"
+        assert alm.params["mjd"] == 0
+        assert alm.params["input_type"] == "mjd"
 
     def test_throws_exception_when_date_and_mjd_are_empty(self, skp_basic):
         skp_basic.update({"mjd": None, "date": None})
@@ -43,8 +43,8 @@ class TestAlmanacInit:
     def test_passes_for_date_as_datetime_object(self, skp_basic):
         skp_basic.update({"date": dt(1986, 4, 26, 1, 24)})
         alm = core.AlmanacQuery(skp_basic)
-        assert alm.almindic["coord_ut_min"] == 24
-        assert alm.almindic["input_type"] == "ut_time"
+        assert alm.params["coord_ut_min"] == 24
+        assert alm.params["input_type"] == "ut_time"
 
     def test_throws_exception_when_date_is_unintelligible(self, skp_basic):
         skp_basic.update({"date": "bogus"})

@@ -86,9 +86,8 @@ class AlmanacQuery:
         if hasattr(indic, "defaults"):
             indic = indic.values
 
-        self.almdata = None
-        self.almserver = "https://etimecalret-002.eso.org"
-        self.almurl = "/observing/etc/api/skycalc_almanac"
+        self.base_url = "https://etimecalret-002.eso.org"
+        self.url = "/observing/etc/api/skycalc_almanac"
 
         # Left: users keyword (skycalc_cli),
         # Right: skycalc Almanac output keywords
@@ -104,7 +103,7 @@ class AlmanacQuery:
             "observatory": "observatory",
         }
 
-        self.almindic = {}
+        self.params = {}
         # The Almanac needs:
         # coord_ra      : float [deg]
         # coord_dec     : float [deg]
@@ -122,7 +121,7 @@ class AlmanacQuery:
         self._set_radec(indic, "dec")
 
         if "observatory" in indic:
-            self.almindic["observatory"] = indic["observatory"]
+            self.params["observatory"] = indic["observatory"]
 
     def _set_date(self, indic):
         if "date" in indic and indic["date"] is not None:
@@ -150,11 +149,11 @@ class AlmanacQuery:
         else:
             raise ValueError("No valid date or mjd given for the Almanac")
 
-        self.almindic.update(updated)
+        self.params.update(updated)
 
     def _set_radec(self, indic, which):
         try:
-            self.almindic[f"coord_{which}"] = float(indic[which])
+            self.params[f"coord_{which}"] = float(indic[which])
         except KeyError as err:
             logging.error("%s coordinate not given for the Almanac.", which)
             logging.exception(err)
@@ -168,9 +167,9 @@ class AlmanacQuery:
         if file_path.exists():
             return json.load(file_path.open(encoding="utf-8"))
 
-        url = self.almserver + self.almurl
+        url = self.base_url + self.url
 
-        response = _send_request(url, self.almindic, self.REQUEST_TIMEOUT)
+        response = _send_request(url, self.params, self.REQUEST_TIMEOUT)
         if not response.text:
             raise ValueError("Empty response.")
 
@@ -181,7 +180,7 @@ class AlmanacQuery:
 
         try:
             json.dump(jsondata, file_path.open("w", encoding="utf-8"))
-            # json.dump(self.almindic, open(fn_params, 'w'))
+            # json.dump(self.params, open(fn_params, 'w'))
         except (PermissionError, FileNotFoundError) as err:
             # Apparently it is not possible to save here.
             raise err
@@ -190,7 +189,7 @@ class AlmanacQuery:
 
     def query(self):
         """
-        Query the ESO Skycalc server with the parameters in self.almindic.
+        Query the ESO Skycalc server with the parameters in self.params.
 
         Returns
         -------
@@ -199,7 +198,7 @@ class AlmanacQuery:
 
         """
         cache_dir = get_cache_dir()
-        cache_name = get_cache_filenames(self.almindic, "almanacquery", "json")
+        cache_name = get_cache_filenames(self.params, "almanacquery", "json")
         cache_path = cache_dir / cache_name
         jsondata = self._get_jsondata(cache_path)
 
@@ -240,10 +239,10 @@ class SkyModel:
 
     def __init__(self):
         self.data = None
-        self.server = "https://etimecalret-002.eso.org"
-        self.url = self.server + "/observing/etc/api/skycalc"
-        self.data_url = self.server + "/observing/etc/tmp/"
-        self.deleter_script_url = self.server + "/observing/etc/api/rmtmp"
+        self.base_url = "https://etimecalret-002.eso.org"
+        self.url = self.base_url + "/observing/etc/api/skycalc"
+        self.data_url = self.base_url + "/observing/etc/tmp/"
+        self.deleter_script_url = self.base_url + "/observing/etc/api/rmtmp"
         self._last_status = ""
         self.tmpdir = ""
         self.params = {
@@ -397,9 +396,8 @@ class SkyModel:
 
     def _delete_server_tmpdir(self, tmpdir):
         try:
-            response = requests.get(
-                self.deleter_script_url + "?d=" + tmpdir, timeout=self.REQUEST_TIMEOUT
-            )
+            response = httpx.get(self.deleter_script_url, params={"d": tmpdir},
+                                 timeout=self.REQUEST_TIMEOUT)
             deleter_response = response.text.strip().lower()
             if deleter_response != "ok":
                 logging.error("Could not delete server tmpdir %s: %s",
