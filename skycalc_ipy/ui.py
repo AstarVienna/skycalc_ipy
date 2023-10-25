@@ -142,7 +142,8 @@ class SkyCalc:
         from astropy import table
 
         if not self.validate_params():
-            raise ValueError("Object contains invalid parameters. Not calling ESO")
+            raise ValueError(
+                "Object contains invalid parameters. Not calling ESO")
 
         skm = SkyModel()
         skm(**self.values)
@@ -271,7 +272,8 @@ def get_almanac_data(
                       UserWarning, stacklevel=2)
 
     skycalc_params = SkyCalc()
-    skycalc_params.values.update({"ra": ra, "dec": dec, "date": date, "mjd": mjd})
+    skycalc_params.values.update(
+        {"ra": ra, "dec": dec, "date": date, "mjd": mjd})
     if observatory is not None:
         skycalc_params.values["observatory"] = observatory
     skycalc_params.validate_params()

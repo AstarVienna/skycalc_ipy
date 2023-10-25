@@ -218,7 +218,8 @@ class TestFunctionGetAlmanacData:
 
     @pytest.mark.webtest
     def test_take_date_only_if_date_and_mjd_are_valid(self):
-        out_dict_date = ui.get_almanac_data(ra=180, dec=0, date="2000-1-1T0:0:0")
+        out_dict_date = ui.get_almanac_data(
+            ra=180, dec=0, date="2000-1-1T0:0:0")
         with pytest.warns(UserWarning) as record:
             out_dict_both = ui.get_almanac_data(
                 ra=180, dec=0, mjd=50000, date="2000-1-1T0:0:0"
