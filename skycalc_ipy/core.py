@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-Based on the skycalc_cli package.
+Based on the skycalc_cli package, but heavily modified.
 
-This modele was taken (mostly unmodified) from ``skycalc_cli`` version 1.1.
+The original code was taken from ``skycalc_cli`` version 1.1.
 Credit for ``skycalc_cli`` goes to ESO
 """
 
@@ -76,14 +76,14 @@ class ESOQueryBase:
 
     def get_cache_filenames(self, prefix: str, suffix: str) -> str:
         """Produce filename from hass of parameters.
+
         Using three underscores between the key-value pairs and two underscores
         between the key and the value.
         """
         akey = "___".join(f"{k}__{v}" for k, v in self.params.items())
         ahash = hashlib.sha256(akey.encode("utf-8")).hexdigest()
         fname = f"{prefix}_{ahash}.{suffix}"
-        # fn_params = fn_data.with_suffix(".params.json")
-        return fname#, fn_params
+        return fname
 
 
 class AlmanacQuery(ESOQueryBase):
@@ -497,7 +497,6 @@ class SkyModel(ESOQueryBase):
 
         else:  # print why validation failed
             logging.error("Parameter validation error: %s", res["error"])
-
 
     def call(self):
         """Deprecated feature, just call the instance."""

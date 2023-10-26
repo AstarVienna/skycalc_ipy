@@ -28,7 +28,10 @@ observatory_dict = {
 
 PATH_HERE = Path(__file__).parent
 
+
 class SkyCalc:
+    """Main UI class."""
+
     def __init__(self, ipt_str=None):
         if ipt_str is None:
             ipt_str = PATH_HERE / "params.yaml"
@@ -45,6 +48,7 @@ class SkyCalc:
         self.last_skycalc_response = None
 
     def print_comments(self, param_names=None):
+        """Print descriptions of parameters."""
         if param_names is None:
             param_names = list(self.comments.keys())
 
@@ -58,6 +62,7 @@ class SkyCalc:
                 print(f"{pname} : {self.comments[pname]}")
 
     def validate_params(self):
+        """Check allowed range for parameters."""
         invalid_keys = []
         for key in self.values:
             if self.check_type[key] == "no_check" or self.defaults[key] is None:
@@ -104,6 +109,7 @@ class SkyCalc:
         observatory=None,
         update_values=False,
     ):
+        """Query ESO Almanac with given parameters."""
         if date is None and mjd is None:
             raise ValueError("Either date or mjd must be set")
 
