@@ -267,7 +267,7 @@ class SkyModel(ESOQueryBase):
 
     def __init__(self):
         self.data = None
-        self.data_url = "/tmp"
+        self.data_url = "/tmp/"
         self.deleter_script_url = "/api/rmtmp"
         self._last_status = ""
         self.tmpdir = ""
@@ -412,9 +412,10 @@ class SkyModel(ESOQueryBase):
             # Use a fixed date so the stored files are always identical for
             # identical requests.
             self.data[0].header["DATE"] = "2017-01-07T00:00:00"
-        except httpx.HTTPError:
+        except Exception as err:
             logging.exception(
                 "Exception raised trying to get FITS data from %s", url)
+            raise err
 
     def write(self, local_filename, **kwargs):
         """Write data to file."""
@@ -483,7 +484,7 @@ class SkyModel(ESOQueryBase):
             try:
                 # retrive and save FITS data (in memory)
                 self._retrieve_data(
-                    self.base_url + self.data_url + tmpdir + "/skytable.fits")
+                    self.BASE_URL + self.data_url + tmpdir + "/skytable.fits")
             except httpx.HTTPError as err:
                 logging.exception("Could not retrieve FITS data from server.")
                 raise err

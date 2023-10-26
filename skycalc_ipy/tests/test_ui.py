@@ -61,19 +61,17 @@ class TestSkycalcParamsInit:
         assert output == "airmass : airmass in range [1.0, 3.0]"
 
     def test_print_comments_mutliple_keywords(self, skp, capsys):
-        skp.print_comments(["airmass", "season"])
+        skp.print_comments("airmass", "season")
         output = capsys.readouterr()[0].strip()
-        assert (
-            output
-            == "airmass : airmass in range [1.0, 3.0]\n"
-            + "season : 0=all year, 1=dec/jan,2=feb/mar..."
-        )
+        expected = ("airmass : airmass in range [1.0, 3.0]\n"
+                    " season : 0=all year, 1=dec/jan,2=feb/mar...")
+        assert output == expected
 
     def test_print_comments_misspelled_keyword(self, skp, capsys):
-        skp.print_comments(["iarmass"])
+        skp.print_comments("iarmass")
         sys_out = capsys.readouterr()
         output = sys_out[0].strip()
-        assert output == "iarmass not found"
+        assert output == "iarmass : <parameter not found>"
 
     def test_keys_returns_list_of_keys(self, skp):
         assert isinstance(skp.keys, Sequence)
