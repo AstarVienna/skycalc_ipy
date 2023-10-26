@@ -47,19 +47,14 @@ class SkyCalc:
 
         self.last_skycalc_response = None
 
-    def print_comments(self, param_names=None):
-        """Print descriptions of parameters."""
-        if param_names is None:
-            param_names = list(self.comments.keys())
-
-        if isinstance(param_names, str):
-            param_names = [param_names]
+    def print_comments(self, *param_names):
+        """Print descriptions of parameters. Print all if no names given."""
+        param_names = param_names or list(self.comments.keys())
+        maxkeylen = len(max(param_names, key=len))
 
         for pname in param_names:
-            if pname not in self.comments:
-                print(f"{pname} not found")
-            else:
-                print(f"{pname} : {self.comments[pname]}")
+            comment = self.comments.get(pname, "<parameter not found>")
+            print(f"{pname:>{maxkeylen}} : {comment}")
 
     def validate_params(self):
         """Check allowed range for parameters."""
@@ -88,11 +83,7 @@ class SkyCalc:
                 if self.values[key] < self.allowed[key]:
                     invalid_keys.append(key)
 
-            else:
-                pass
-
         if invalid_keys:
-            logging.warning("See <SkyCalc>.comments[<key>] for help")
             logging.warning("The following entries are invalid:")
             for key in invalid_keys:
                 logging.warning("'%s' : %s : %s", key,
@@ -241,7 +232,8 @@ class SkyCalc:
 
     def __setitem__(self, key, value):
         if key not in self.keys:
-            raise ValueError(key + " not in self.defaults")
+            raise KeyError(f"Key {key} is not defined. Only predefined keys "
+                           "can be set. See SkyCalc.keys for a list of those.")
         self.values[key] = value
 
     def __getitem__(self, item):
