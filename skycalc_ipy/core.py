@@ -432,8 +432,10 @@ class SkyModel(ESOQueryBase):
 
     def _delete_server_tmpdir(self, tmpdir):
         try:
-            response = httpx.get(self.deleter_script_url, params={"d": tmpdir},
-                                 timeout=self.REQUEST_TIMEOUT)
+            with httpx.Client(base_url=self.BASE_URL,
+                              timeout=self.REQUEST_TIMEOUT) as client:
+                response = client.get(self.deleter_script_url,
+                                      params={"d": tmpdir})
             deleter_response = response.text.strip().lower()
             if deleter_response != "ok":
                 logging.error("Could not delete server tmpdir %s: %s",
@@ -480,7 +482,8 @@ class SkyModel(ESOQueryBase):
         if status == "success":
             try:
                 # retrive and save FITS data (in memory)
-                self._retrieve_data(self.data_url + tmpdir + "/skytable.fits")
+                self._retrieve_data(
+                    self.base_url + self.data_url + tmpdir + "/skytable.fits")
             except httpx.HTTPError as err:
                 logging.exception("Could not retrieve FITS data from server.")
                 raise err
