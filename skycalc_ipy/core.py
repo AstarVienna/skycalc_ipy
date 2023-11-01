@@ -1,57 +1,94 @@
+# -*- coding: utf-8 -*-
 """
-Based on the skycalc_cli package.
+Based on the skycalc_cli package, but heavily modified.
 
-This modele was taken (mostly unmodified) from ``skycalc_cli`` version 1.1.
+The original code was taken from ``skycalc_cli`` version 1.1.
 Credit for ``skycalc_cli`` goes to ESO
 """
 
-from __future__ import print_function
+import logging
+import warnings
 
 import hashlib
 import json
-import os
+from os import environ
 from datetime import datetime
 from pathlib import Path
-from typing import Dict
-from types import ModuleType
+from collections.abc import Mapping
+from importlib import import_module
 
-import requests
+import httpx
 
 from astropy.io import fits
 
-try:
-    import scopesim_data
-except:
-    scopesim_data = None
+
+CACHE_DIR_FALLBACK = ".astar/skycalc_ipy"
 
 
-def get_cache_filenames(params: Dict, prefix: str, suffix: str):
-    """Get filenames to cache the data.
+def get_cache_dir() -> Path:
+    """Establish the cache directory.
 
     There are three possible locations for the cache directory:
     1. As set in `os.environ["SKYCALC_IPY_CACHE_DIR"]`
     2. As set in the `scopesim_data` package.
     3. The `data` directory in this package.
     """
+    try:
+        dir_cache = Path(environ["SKYCALC_IPY_CACHE_DIR"])
+    except KeyError:
+        try:
+            sim_data = import_module("scopesim_data")
+            dir_cache = Path(getattr(sim_data, "dir_cache_skycalc"))
+        except (ImportError, AttributeError):
+            dir_cache = Path.home() / CACHE_DIR_FALLBACK
 
-    if "SKYCALC_IPY_CACHE_DIR" in os.environ:
-        dir_cache = Path(os.environ["SKYCALC_IPY_CACHE_DIR"])
-    elif isinstance(scopesim_data, ModuleType):
-        dir_cache = scopesim_data.dir_cache_skycalc
-    else:
-        dir_cache = Path(__file__).parent / "data"
-    # Three underscores between the key-value pairs, two underscores
-    # between the key and the value.
-    akey = "___".join(f"{k}__{v}" for k, v in params.items())
-    ahash = hashlib.sha256(akey.encode("utf-8")).hexdigest()
-    fn_data = dir_cache / f"{prefix}_{ahash}.{suffix}"
-    fn_params = fn_data.with_suffix(".params.json")
-    return fn_data, fn_params
+    if not dir_cache.is_dir():
+        dir_cache.mkdir(parents=True)
+
+    return dir_cache
 
 
-class AlmanacQuery:
+class ESOQueryBase:
+    """Base class for queries to ESO skycalc server."""
+
+    REQUEST_TIMEOUT = 2  # Time limit (in seconds) for server response
+    BASE_URL = "https://etimecalret-002.eso.org/observing/etc"
+
+    def __init__(self, url, params):
+        self.url = url
+        self.params = params
+
+    def _send_request(self) -> httpx.Response:
+        try:
+            with httpx.Client(base_url=self.BASE_URL,
+                              timeout=self.REQUEST_TIMEOUT) as client:
+                response = client.post(self.url, json=self.params)
+            response.raise_for_status()
+        except httpx.RequestError as err:
+            logging.exception("An error occurred while requesting %s.",
+                              err.request.url)
+            raise err
+        except httpx.HTTPStatusError as err:
+            logging.error("Error response %s while requesting %s.",
+                          err.response.status_code, err.request.url)
+            raise err
+        return response
+
+    def get_cache_filenames(self, prefix: str, suffix: str) -> str:
+        """Produce filename from hass of parameters.
+
+        Using three underscores between the key-value pairs and two underscores
+        between the key and the value.
+        """
+        akey = "___".join(f"{k}__{v}" for k, v in self.params.items())
+        ahash = hashlib.sha256(akey.encode("utf-8")).hexdigest()
+        fname = f"{prefix}_{ahash}.{suffix}"
+        return fname
+
+
+class AlmanacQuery(ESOQueryBase):
     """
-    A class for querying the SkyCalc Almanac
+    A class for querying the SkyCalc Almanac.
 
     Parameters
     ----------
@@ -70,15 +107,14 @@ class AlmanacQuery:
 
     """
 
-    REQUEST_TIMEOUT = 2  # Time limit (in seconds) for server response
-
     def __init__(self, indic):
+        # FIXME: This basically checks isinstance(indic, ui.SkyCalc), but we
+        #        can't import that because it would create a circual import.
+        # TODO: Find a better way to do this!!
         if hasattr(indic, "defaults"):
             indic = indic.values
 
-        self.almdata = None
-        self.almserver = "https://etimecalret-002.eso.org"
-        self.almurl = "/observing/etc/api/skycalc_almanac"
+        super().__init__("/api//skycalc_almanac", {})
 
         # Left: users keyword (skycalc_cli),
         # Right: skycalc Almanac output keywords
@@ -94,7 +130,6 @@ class AlmanacQuery:
             "observatory": "observatory",
         }
 
-        self.almindic = {}
         # The Almanac needs:
         # coord_ra      : float [deg]
         # coord_dec     : float [deg]
@@ -107,50 +142,77 @@ class AlmanacQuery:
         # coord_ut_min  : int
         # coord_ut_sec  : float
 
+        self._set_date(indic)
+        self._set_radec(indic, "ra")
+        self._set_radec(indic, "dec")
+
+        if "observatory" in indic:
+            self.params["observatory"] = indic["observatory"]
+
+    def _set_date(self, indic):
         if "date" in indic and indic["date"] is not None:
             if isinstance(indic["date"], str):
                 isotime = datetime.strptime(indic["date"], "%Y-%m-%dT%H:%M:%S")
             else:
                 isotime = indic["date"]
 
-            self.almindic["input_type"] = "ut_time"
-            self.almindic["coord_year"] = isotime.year
-            self.almindic["coord_month"] = isotime.month
-            self.almindic["coord_day"] = isotime.day
-            self.almindic["coord_ut_hour"] = isotime.hour
-            self.almindic["coord_ut_min"] = isotime.minute
-            self.almindic["coord_ut_sec"] = isotime.second
+            updated = {
+                "input_type": "ut_time",
+                "coord_year": isotime.year,
+                "coord_month": isotime.month,
+                "coord_day": isotime.day,
+                "coord_ut_hour": isotime.hour,
+                "coord_ut_min": isotime.minute,
+                "coord_ut_sec": isotime.second,
+                }
 
         elif "mjd" in indic and indic["mjd"] is not None:
-            self.almindic["input_type"] = "mjd"
-            self.almindic["mjd"] = float(indic["mjd"])
+            updated = {
+                "input_type": "mjd",
+                "mjd": float(indic["mjd"]),
+                }
 
         else:
             raise ValueError("No valid date or mjd given for the Almanac")
 
-        if "ra" not in indic or "dec" not in indic:
-            raise ValueError("ra/dec coordinate not given for the Almanac.")
+        self.params.update(updated)
+
+    def _set_radec(self, indic, which):
+        try:
+            self.params[f"coord_{which}"] = float(indic[which])
+        except KeyError as err:
+            logging.exception("%s coordinate not given for the Almanac.",
+                              which)
+            raise err
+        except ValueError as err:
+            logging.exception("Wrong %s format for the Almanac.", which)
+            raise err
+
+    def _get_jsondata(self, file_path: Path):
+        if file_path.exists():
+            return json.load(file_path.open(encoding="utf-8"))
+
+        response = self._send_request()
+        if not response.text:
+            raise ValueError("Empty response.")
+
+        jsondata = response.json()["output"]
+        # Use a fixed date so the stored files are always identical for
+        # identical requests.
+        jsondata["execution_datetime"] = "2017-01-07T00:00:00 UTC"
 
         try:
-            ra = float(indic["ra"])
-        except ValueError:
-            print("Error: wrong ra format for the Almanac.")
-            raise
-        self.almindic["coord_ra"] = ra
+            json.dump(jsondata, file_path.open("w", encoding="utf-8"))
+            # json.dump(self.params, open(fn_params, 'w'))
+        except (PermissionError, FileNotFoundError) as err:
+            # Apparently it is not possible to save here.
+            raise err
 
-        try:
-            dec = float(indic["dec"])
-        except ValueError:
-            print("Error: wrong dec format for the Almanac.")
-            raise
-        self.almindic["coord_dec"] = dec
+        return jsondata
 
-        if "observatory" in indic:
-            self.almindic["observatory"] = indic["observatory"]
-
-    def query(self):
+    def __call__(self):
         """
-        Queries the ESO Skycalc server with the parameters in self.almindic
+        Query the ESO Skycalc server with the parameters in self.params.
 
         Returns
         -------
@@ -158,29 +220,10 @@ class AlmanacQuery:
             Dictionary with the relevant parameters for the date given
 
         """
-        fn_data, fn_params = get_cache_filenames(self.almindic, "almanacquery", "json")
-        if fn_data.exists():
-            jsondata = json.load(open(fn_data))
-        else:
-            url = self.almserver + self.almurl
-
-            response = requests.post(
-                url, json.dumps(self.almindic), timeout=self.REQUEST_TIMEOUT
-            )
-            rawdata = response.text
-
-            jsondata1 = json.loads(rawdata)
-            jsondata = jsondata1["output"]
-            # Use a fixed date so the stored files are always identical for
-            # identical requests.
-            jsondata["execution_datetime"] = "2017-01-07T00:00:00 UTC"
-
-            try:
-                json.dump(jsondata, open(fn_data, 'w'))
-                json.dump(self.almindic, open(fn_params, 'w'))
-            except (PermissionError, FileNotFoundError):
-                # Apparently it is not possible to save here.
-                pass
+        cache_dir = get_cache_dir()
+        cache_name = self.get_cache_filenames("almanacquery", "json")
+        cache_path = cache_dir / cache_name
+        jsondata = self._get_jsondata(cache_path)
 
         # Find the relevant (key, value)
         almdata = {}
@@ -195,15 +238,22 @@ class AlmanacQuery:
             try:
                 almdata[key] = jsondata[subsection][value]
             except (KeyError, ValueError):
-                print(f"Warning: key \"{subsection}/{value}\" not found in the"
-                      " Almanac response.")
+                logging.warning("Key '%s/%s' not found in Almanac response.",
+                                subsection, value)
 
         return almdata
 
+    def query(self):
+        """Deprecated feature. Class is now callable, use that instead."""
+        warnings.warn("The .query() method is deprecated and will be removed "
+                      "in a future release. Please simply call the instance.",
+                      DeprecationWarning, stacklevel=2)
+        return self()
 
-class SkyModel:
+
+class SkyModel(ESOQueryBase):
     """
-    Class for querying the Advanced SkyModel at ESO
+    Class for querying the Advanced SkyModel at ESO.
 
     Contains all the parameters needed for querying the ESO SkyCalc server.
     The parameters are contained in :attr:`.params` and the returned FITS file
@@ -215,17 +265,13 @@ class SkyModel:
 
     """
 
-    REQUEST_TIMEOUT = 2  # Time limit (in seconds) for server response
-
     def __init__(self):
-        self.stop_on_errors_and_exceptions = True
         self.data = None
-        self.server = "https://etimecalret-002.eso.org"
-        self.url = self.server + "/observing/etc/api/skycalc"
-        self.deleter_script_url = self.server + "/observing/etc/api/rmtmp"
-        self.bugreport_text = ""
+        self.data_url = "/tmp/"
+        self.deleter_script_url = "/api/rmtmp"
+        self._last_status = ""
         self.tmpdir = ""
-        self.params = {
+        params = {
             # Airmass. Alt and airmass are coupled through the plane parallel
             # approximation airmass=sec(z), z being the zenith distance
             # z=90-Alt
@@ -312,14 +358,25 @@ class SkyModel:
             "observatory": "paranal",  # paranal
         }
 
+        super().__init__("/api/skycalc", params)
+
     def fix_observatory(self):
         """
-        Converts the human readable observatory name into its ESO ID number
+        Convert the human readable observatory name into its ESO ID number.
 
         The following observatory names are accepted: ``lasilla``, ``paranal``,
         ``armazones`` or ``3060m``, ``highanddry`` or ``5000m``
 
         """
+        # FIXME: DO WE ALWAYS WANT TO RAISE WHEN IT'S NOT ONE OF THOSE???
+        if self.params["observatory"] not in {
+            "paranal",
+            "lasilla",
+            "armazones",
+            "3060m",
+            "5000m",
+        }:
+            return  # nothing to do
 
         if self.params["observatory"] == "lasilla":
             self.params["observatory"] = "2400"
@@ -339,6 +396,7 @@ class SkyModel:
             raise ValueError(
                 "Wrong Observatory name, please refer to the documentation."
             )
+        return  # for consistency
 
     def __getitem__(self, item):
         return self.params[item]
@@ -348,135 +406,120 @@ class SkyModel:
         if key == "observatory":
             self.fix_observatory()
 
-    def handle_exception(self, err, msg):
-        print(msg)
-        print(err)
-        print(self.bugreport_text)
-        if self.stop_on_errors_and_exceptions:
-            # There used to be a sys.exit here. That was probably there to
-            # provide a clean exit when using skycalc_ipy as a command-line
-            # tool or something like that. However, skycalc_ipy is also used as
-            # a library, and libraries should never just exit and this
-            # command-line functionality does not seem to exist. So instead,
-            # just raise here. See also handle_error() below.
-            raise
-
-    # handle the kind of errors we issue ourselves.
-    def handle_error(self, msg):
-        print(msg)
-        print(self.bugreport_text)
-        if self.stop_on_errors_and_exceptions:
-            # See handle_exception above.
-            raise
-
-    def retrieve_data(self, url):
+    def _retrieve_data(self, url):
         try:
             self.data = fits.open(url)
             # Use a fixed date so the stored files are always identical for
             # identical requests.
             self.data[0].header["DATE"] = "2017-01-07T00:00:00"
-        except requests.exceptions.RequestException as err:
-            self.handle_exception(
-                err, "Exception raised trying to get FITS data from " + url
-            )
+        except Exception as err:
+            logging.exception(
+                "Exception raised trying to get FITS data from %s", url)
+            raise err
 
     def write(self, local_filename, **kwargs):
+        """Write data to file."""
         try:
             self.data.writeto(local_filename, **kwargs)
-        except (IOError, FileNotFoundError) as err:
-            self.handle_exception(err, "Exception raised trying to write fits file ")
+        except (IOError, FileNotFoundError):
+            logging.exception("Exception raised trying to write fits file.")
 
     def getdata(self):
+        """Deprecated feature, just use the .data attribute."""
+        warnings.warn("The .getdata method is deprecated and will be removed "
+                      "in a future release. Use the identical .data attribute "
+                      "instead.", DeprecationWarning, stacklevel=2)
         return self.data
 
-    def delete_server_tmpdir(self, tmpdir):
+    def _delete_server_tmpdir(self, tmpdir):
         try:
-            response = requests.get(
-                self.deleter_script_url + "?d=" + tmpdir, timeout=self.REQUEST_TIMEOUT
-            )
-            deleter_response = response.text.strip()
+            with httpx.Client(base_url=self.BASE_URL,
+                              timeout=self.REQUEST_TIMEOUT) as client:
+                response = client.get(self.deleter_script_url,
+                                      params={"d": tmpdir})
+            deleter_response = response.text.strip().lower()
             if deleter_response != "ok":
-                self.handle_error("Could not delete server tmpdir " + tmpdir)
-        except requests.exceptions.RequestException as err:
-            self.handle_exception(
-                err, "Exception raised trying to delete tmp dir " + tmpdir
-            )
+                logging.error("Could not delete server tmpdir %s: %s",
+                              tmpdir, deleter_response)
+        except httpx.HTTPError:
+            logging.exception("Exception raised trying to delete tmp dir %s",
+                              tmpdir)
 
-    def call(self, test=False):
-        # print 'self.url=',self.url
-        # print 'self.params=',self.params
+    def _update_params(self, updated: Mapping) -> None:
+        par_keys = self.params.keys()
+        new_keys = updated.keys()
+        self.params.update((key, updated[key]) for key in par_keys & new_keys)
+        logging.debug("Ignoring invalid keywords: %s", new_keys - par_keys)
 
-        if self.params["observatory"] in {
-            "paranal",
-            "lasilla",
-            "armazones",
-            "3060m",
-            "5000m",
-        }:
-            self.fix_observatory()
+    def __call__(self, **kwargs):
+        """Send server request."""
+        if kwargs:
+            logging.info("Setting new parameters: %s", kwargs)
 
-        fn_data, fn_params = get_cache_filenames(self.params, "skymodel", "fits")
-        if fn_data.exists():
-            self.data = fits.open(fn_data)
+        self._update_params(kwargs)
+        self.fix_observatory()
+
+        cache_dir = get_cache_dir()
+        cache_name = self.get_cache_filenames("skymodel", "fits")
+        cache_path = cache_dir / cache_name
+
+        if cache_path.exists():
+            self.data = fits.open(cache_path)
             return
 
-        try:
-            response = requests.post(
-                self.url, data=json.dumps(self.params), timeout=self.REQUEST_TIMEOUT
-            )
-        except requests.exceptions.RequestException as err:
-            self.handle_exception(
-                err, "Exception raised trying to POST request " + self.url
-            )
-            return
+        response = self._send_request()
 
         try:
-            res = json.loads(response.text)
+            res = response.json()
             status = res["status"]
             tmpdir = res["tmpdir"]
         except (KeyError, ValueError) as err:
-            self.handle_exception(
-                err, "Exception raised trying to decode server response "
-            )
-            return
+            logging.exception(
+                "Exception raised trying to decode server response.")
+            raise err
 
-        tmpurl = self.server + "/observing/etc/tmp/" + tmpdir + "/skytable.fits"
+        self._last_status = status
 
         if status == "success":
             try:
                 # retrive and save FITS data (in memory)
-                self.retrieve_data(tmpurl)
-            except requests.exceptions.RequestException as err:
-                self.handle_exception(err, "could not retrieve FITS data from server")
+                self._retrieve_data(
+                    self.BASE_URL + self.data_url + tmpdir + "/skytable.fits")
+            except httpx.HTTPError as err:
+                logging.exception("Could not retrieve FITS data from server.")
+                raise err
 
             try:
-                self.data.writeto(fn_data)
-                json.dump(self.params, open(fn_params, 'w'))
+                self.data.writeto(cache_path)
+                # with fn_params.open("w", encoding="utf-8") as file:
+                #     json.dump(self.params, file)
             except (PermissionError, FileNotFoundError):
                 # Apparently it is not possible to save here.
                 pass
 
-            self.delete_server_tmpdir(tmpdir)
+            self._delete_server_tmpdir(tmpdir)
 
         else:  # print why validation failed
-            self.handle_error("parameter validation error: " + res["error"])
+            logging.error("Parameter validation error: %s", res["error"])
 
-        if test:
-            # print 'call() returning status:',status
-            return status
+    def call(self):
+        """Deprecated feature, just call the instance."""
+        warnings.warn("The .call() method is deprecated and will be removed "
+                      "in a future release. Please simply call the instance.",
+                      DeprecationWarning, stacklevel=2)
+        self()
 
     def callwith(self, newparams):
-        for key, val in newparams.items():
-            if key in self.params:  # valid
-                self.params[key] = val
-            else:
-                pass
-                # print('callwith() ignoring invalid keyword: ', key)
-        self.call()
+        """Deprecated feature, just call the instance."""
+        warnings.warn("The .callwith(args) method is deprecated and will be "
+                      "removed in a future release. Please simply call the "
+                      "instance with optional kwargs instead.",
+                      DeprecationWarning, stacklevel=2)
+        self(**newparams)
 
     def printparams(self, keys=None):
         """
-        List the values of all, or a subset, of parameters
+        List the values of all, or a subset, of parameters.
 
         Parameters
         ----------
@@ -485,7 +528,4 @@ class SkyModel:
 
         """
         for key in keys or self.params.keys():
-            print(key, self.params[key])
-
-    def reset(self):
-        self.__init__()
+            print(f"  {key}: {self.params[key]}")

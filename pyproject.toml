@@ -1,6 +1,6 @@
 [project]
 name = "skycalc_ipy"
-version = "0.2.0"
+version = "0.3.0a0"
 # When updating the version, also
 # - update the date in anisocado/version.py
 # - update the release notese in docs/source/index.rst
@@ -28,7 +28,7 @@ dependencies = [
     # package on PyPI, for minimumdependencies.yml
     "numpy>=1.18.0",
     "astropy>=4.0",
-    "requests>=2.20",
+    "httpx>=0.23",
     "pyyaml>=5.3"
 ]
 
