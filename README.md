@@ -6,7 +6,7 @@
 [![Documentation Status](https://readthedocs.org/projects/skycalc-ipy/badge/?version=latest)](https://skycalc-ipy.readthedocs.io/en/latest)
 [![codecov](https://codecov.io/gh/AstarVienna/skycalc_ipy/graph/badge.svg)](https://codecov.io/gh/AstarVienna/skycalc_ipy)
 [![PyPI - Version](https://img.shields.io/pypi/v/skycalc-ipy)](https://pypi.org/project/skycalc-ipy/)
-[![Python Version Support](https://github-actions.40ants.com/AstarVienna/DevOps/matrix.svg?only=Tests.build.ubuntu-latest)](https://github.com/AstarVienna/ScopeSim)
+[![Python Version Support](https://github-actions.40ants.com/AstarVienna/DevOps/matrix.svg?only=Tests.build.ubuntu-latest)](https://github.com/AstarVienna/skycalc_ipy)
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
