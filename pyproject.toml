@@ -31,6 +31,9 @@ pytest-cov = "^4.1.0"
 synphot = "^1.1.0"
 matplotlib = "^3.2.0"
 
+[tool.poetry.group.docs]
+optional = true
+
 [tool.poetry.group.docs.dependencies]
 sphinx = "^5.3.0"
 sphinx-rtd-theme = "^0.5.1"
