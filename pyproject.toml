@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "skycalc_ipy"
+name = "skycalc-ipy"
 version = "0.3.0a0"
 description = "Get atmospheric spectral information from the ESO skycalc server."
 license = "GPL-3.0-or-later"
@@ -23,7 +23,7 @@ python = "^3.8"
 numpy = "^1.24.4"
 astropy = "^5.2.2"
 httpx = "^0.23.0"
-pyyaml = "^5.3.0"
+pyyaml = "^6.0.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.3"
