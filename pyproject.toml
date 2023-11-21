@@ -2,9 +2,21 @@
 name = "skycalc-ipy"
 version = "0.3.0a0"
 description = "Get atmospheric spectral information from the ESO skycalc server."
-authors = ["Kieran Leschinski <kieran.leschinski@unive.ac.at>"]
 license = "GPL-3.0-or-later"
+authors = ["Kieran Leschinski <kieran.leschinski@unive.ac.at>"]
+maintainers = [
+    "Kieran Leschinski <kieran.leschinski@unive.ac.at>",
+    "Hugo Buddelmeijer <hugo@buddelmeijer.nl>",
+    "Fabian Haberhauer <fabian.haberhauer@univie.ac.at>",
+]
 readme = "README.md"
+repository = "https://github.com/AstarVienna/skycalc_ipy"
+documentation = "https://skycalc-ipy.readthedocs.io/en/latest/"
+classifiers = [
+    "Intended Audience :: Science/Research",
+    "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering :: Astronomy",
+]
 
 [tool.poetry.dependencies]
 python = "^3.8"
@@ -19,6 +31,24 @@ pytest-cov = "^4.1.0"
 synphot = "^1.1.0"
 matplotlib = "^3.2.0"
 
+[tool.poetry.group.docs.dependencies]
+sphinx = "^5.3.0"
+sphinx-rtd-theme = "^0.5.1"
+jupyter-sphinx = "^0.2.3"
+sphinxcontrib-apidoc = "^0.4.0"
+nbsphinx = "^0.9.3"
+numpydoc = "^1.6.0"
+matplotlib = "^3.2.0"
+
+[tool.poetry.urls]
+"Bug Tracker" = "https://github.com/AstarVienna/skycalc_ipy/issues"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+addopts = "--strict-markers"
+markers = [
+    "webtest: marks tests as requiring network (deselect with '-m \"not webtest\"')",
+]
