@@ -15,3 +15,4 @@ jobs:
   call-tests:
     name: Call tests
     uses: AstarVienna/DevOps/.github/workflows/tests.yml@poetry
+    secrets: inherit
