@@ -59,3 +59,6 @@ addopts = "--strict-markers"
 markers = [
     "webtest: marks tests as requiring network (deselect with '-m \"not webtest\"')",
 ]
+
+[tool.coverage.run]
+omit = ["tests/*"]
