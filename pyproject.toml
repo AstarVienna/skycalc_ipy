@@ -60,5 +60,5 @@ markers = [
     "webtest: marks tests as requiring network (deselect with '-m \"not webtest\"')",
 ]
 
-[tool.coverage.run]
-omit = ["tests/*"]
+[tool.coverage.report]
+omit = ["skycalc_ipy/tests/*"]
