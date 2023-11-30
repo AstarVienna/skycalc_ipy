@@ -163,7 +163,7 @@ class TestSkyCalcParamsGetAlmanacData:
         assert out_dict["observatory"] == "lasilla"
         assert skp["observatory"] == "paranal"
 
-    def raise_error_if_both_date_and_mjd_are_empty(self, skp):
+    def test_raise_error_if_both_date_and_mjd_are_empty(self, skp):
         with raises(ValueError):
             skp.get_almanac_data(180, 0)
 
