@@ -22,11 +22,14 @@ jobs:
         with:
           poetry-version: "1.7.1"
 
+      - name: Build package
+        run: poetry build
+
       - name: Store distribution files
         uses: actions/upload-artifact@v3
         with:
           name: distribution
-          path: dist
+          path: dist/
 
   publish:
     name: Publish package to PyPI
