@@ -23,6 +23,7 @@ from astropy.io import fits
 
 
 CACHE_DIR_FALLBACK = ".astar/skycalc_ipy"
+logger = logging.getLogger("astar." + __name__)
 
 
 def get_cache_dir() -> Path:
@@ -65,12 +66,12 @@ class ESOQueryBase:
                 response = client.post(self.url, json=self.params)
             response.raise_for_status()
         except httpx.RequestError as err:
-            logging.exception("An error occurred while requesting %s.",
-                              err.request.url)
+            logger.exception("An error occurred while requesting %s.",
+                             err.request.url)
             raise err
         except httpx.HTTPStatusError as err:
-            logging.error("Error response %s while requesting %s.",
-                          err.response.status_code, err.request.url)
+            logger.error("Error response %s while requesting %s.",
+                         err.response.status_code, err.request.url)
             raise err
         return response
 
@@ -181,11 +182,10 @@ class AlmanacQuery(ESOQueryBase):
         try:
             self.params[f"coord_{which}"] = float(indic[which])
         except KeyError as err:
-            logging.exception("%s coordinate not given for the Almanac.",
-                              which)
+            logger.exception("%s coordinate not given for the Almanac.", which)
             raise err
         except ValueError as err:
-            logging.exception("Wrong %s format for the Almanac.", which)
+            logger.exception("Wrong %s format for the Almanac.", which)
             raise err
 
     def _get_jsondata(self, file_path: Path):
@@ -238,8 +238,8 @@ class AlmanacQuery(ESOQueryBase):
             try:
                 almdata[key] = jsondata[subsection][value]
             except (KeyError, ValueError):
-                logging.warning("Key '%s/%s' not found in Almanac response.",
-                                subsection, value)
+                logger.warning("Key '%s/%s' not found in Almanac response.",
+                               subsection, value)
 
         return almdata
 
@@ -413,7 +413,7 @@ class SkyModel(ESOQueryBase):
             # identical requests.
             self.data[0].header["DATE"] = "2017-01-07T00:00:00"
         except Exception as err:
-            logging.exception(
+            logger.exception(
                 "Exception raised trying to get FITS data from %s", url)
             raise err
 
@@ -422,7 +422,7 @@ class SkyModel(ESOQueryBase):
         try:
             self.data.writeto(local_filename, **kwargs)
         except (IOError, FileNotFoundError):
-            logging.exception("Exception raised trying to write fits file.")
+            logger.exception("Exception raised trying to write fits file.")
 
     def getdata(self):
         """Deprecated feature, just use the .data attribute."""
@@ -439,22 +439,22 @@ class SkyModel(ESOQueryBase):
                                       params={"d": tmpdir})
             deleter_response = response.text.strip().lower()
             if deleter_response != "ok":
-                logging.error("Could not delete server tmpdir %s: %s",
-                              tmpdir, deleter_response)
+                logger.error("Could not delete server tmpdir %s: %s",
+                             tmpdir, deleter_response)
         except httpx.HTTPError:
-            logging.exception("Exception raised trying to delete tmp dir %s",
-                              tmpdir)
+            logger.exception("Exception raised trying to delete tmp dir %s",
+                             tmpdir)
 
     def _update_params(self, updated: Mapping) -> None:
         par_keys = self.params.keys()
         new_keys = updated.keys()
         self.params.update((key, updated[key]) for key in par_keys & new_keys)
-        logging.debug("Ignoring invalid keywords: %s", new_keys - par_keys)
+        logger.debug("Ignoring invalid keywords: %s", new_keys - par_keys)
 
     def __call__(self, **kwargs):
         """Send server request."""
         if kwargs:
-            logging.info("Setting new parameters: %s", kwargs)
+            logger.info("Setting new parameters: %s", kwargs)
 
         self._update_params(kwargs)
         self.fix_observatory()
@@ -474,7 +474,7 @@ class SkyModel(ESOQueryBase):
             status = res["status"]
             tmpdir = res["tmpdir"]
         except (KeyError, ValueError) as err:
-            logging.exception(
+            logger.exception(
                 "Exception raised trying to decode server response.")
             raise err
 
@@ -486,7 +486,7 @@ class SkyModel(ESOQueryBase):
                 self._retrieve_data(
                     self.BASE_URL + self.data_url + tmpdir + "/skytable.fits")
             except httpx.HTTPError as err:
-                logging.exception("Could not retrieve FITS data from server.")
+                logger.exception("Could not retrieve FITS data from server.")
                 raise err
 
             try:
@@ -500,7 +500,7 @@ class SkyModel(ESOQueryBase):
             self._delete_server_tmpdir(tmpdir)
 
         else:  # print why validation failed
-            logging.error("Parameter validation error: %s", res["error"])
+            logger.error("Parameter validation error: %s", res["error"])
 
     def call(self):
         """Deprecated feature, just call the instance."""
