@@ -27,6 +27,7 @@ observatory_dict = {
 }
 
 PATH_HERE = Path(__file__).parent
+logger = logging.getLogger("astar." + __name__)
 
 
 class SkyCalc:
@@ -84,10 +85,10 @@ class SkyCalc:
                     invalid_keys.append(key)
 
         if invalid_keys:
-            logging.warning("The following entries are invalid:")
+            logger.warning("The following entries are invalid:")
             for key in invalid_keys:
-                logging.warning("'%s' : %s : %s", key,
-                                self.values[key], self.comments[key])
+                logger.warning("'%s' : %s : %s", key,
+                               self.values[key], self.comments[key])
 
         return not invalid_keys
 
@@ -211,7 +212,7 @@ class SkyCalc:
                 points=tbl["lam"].data * tbl["lam"].unit,
                 lookup_table=tbl["flux"].data * funit,
             )
-            logging.warning(
+            logger.warning(
                 "Synphot doesn't accept surface brightnesses \n"
                 "The resulting spectrum should be multiplied by arcsec-2"
             )

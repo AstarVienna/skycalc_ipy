@@ -8,6 +8,10 @@ from . import core
 
 from .ui import SkyCalc
 
+import logging
+logger = logging.getLogger("astar." + __name__)
+logger.addHandler(logging.NullHandler())
+
 from importlib import metadata
 
 __version__ = metadata.version(__package__)
