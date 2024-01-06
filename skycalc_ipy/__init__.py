@@ -8,11 +8,6 @@ from . import core
 
 from .ui import SkyCalc
 
-################################################################################
-#                          VERSION INFORMATION                                 #
-################################################################################
+from importlib import metadata
 
-try:
-    from .version import version as __version__
-except ImportError:
-    __version__ = "Version number is not available"
+__version__ = metadata.version(__package__)
