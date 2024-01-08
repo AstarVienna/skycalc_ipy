@@ -26,7 +26,7 @@ jobs:
         run: echo "## Building $(poetry version)" >> $GITHUB_STEP_SUMMARY
 
       - name: Build package
-        run: echo "$(poetry build)" >> $GITHUB_STEP_SUMMARY
+        run: poetry build >> $GITHUB_STEP_SUMMARY
 
       - name: Store distribution files
         uses: actions/upload-artifact@v3
@@ -75,7 +75,7 @@ jobs:
       - name: Publish to PyPI
         env:
           POETRY_PYPI_TOKEN_PYPI: ${{ secrets.PYPI_TOKEN }}
-        run: echo "$(poetry publish)" >> $GITHUB_STEP_SUMMARY
+        run: poetry publish >> $GITHUB_STEP_SUMMARY
 
   bump:
     name: Bump to (next) dev version
