@@ -3,7 +3,7 @@
 [![Build Status](https://github.com/AstarVienna/skycalc_ipy/actions/workflows/tests.yml/badge.svg)](https://github.com/AstarVienna/skycalc_ipy/actions/workflows/tests.yml/badge.svg)
 [![Poetry](https://img.shields.io/endpoint?url=https://python-poetry.org/badge/v0.json)](https://python-poetry.org/)
 ![dev version](https://img.shields.io/badge/dynamic/toml?url=https%3A%2F%2Fraw.githubusercontent.com%2FAstarVienna%2Fskycalc_ipy%2Fmaster%2Fpyproject.toml&query=%24.tool.poetry.version&label=dev%20version&color=teal)
-![Server Status](https://img.shields.io/website?url=https%3A%2F%2Fetimecalret-002.eso.org%2Fobserving%2Fetc%2Fapi%2Fskycalc%2F&label=ESO%20ETC%20server)
+![Server Status](https://img.shields.io/website?url=https%3A%2F%2Fetimecalret-002.eso.org%2Fobserving%2Fetc%2F&label=ESO%20ETC%20server)
 
 [![Documentation Status](https://readthedocs.org/projects/skycalc-ipy/badge/?version=latest)](https://skycalc-ipy.readthedocs.io/en/latest)
 [![codecov](https://codecov.io/gh/AstarVienna/skycalc_ipy/graph/badge.svg)](https://codecov.io/gh/AstarVienna/skycalc_ipy)
