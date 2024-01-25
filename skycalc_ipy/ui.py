@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """Skyclc IPY user interface."""
 
-import logging
 import warnings
 from pathlib import Path
 from datetime import datetime as dt
@@ -11,6 +10,8 @@ import numpy as np
 
 from astropy import units as u
 from astropy.io import fits
+
+from astar_utils import get_logger
 
 from .core import AlmanacQuery, SkyModel
 
@@ -27,7 +28,7 @@ observatory_dict = {
 }
 
 PATH_HERE = Path(__file__).parent
-logger = logging.getLogger("astar." + __name__)
+logger = get_logger(__name__)
 
 
 class SkyCalc:

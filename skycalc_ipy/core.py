@@ -6,7 +6,6 @@ The original code was taken from ``skycalc_cli`` version 1.1.
 Credit for ``skycalc_cli`` goes to ESO
 """
 
-import logging
 import warnings
 
 import hashlib
@@ -21,9 +20,10 @@ import httpx
 
 from astropy.io import fits
 
+from astar_utils import get_logger
 
 CACHE_DIR_FALLBACK = ".astar/skycalc_ipy"
-logger = logging.getLogger("astar." + __name__)
+logger = get_logger(__name__)
 
 
 def get_cache_dir() -> Path:
