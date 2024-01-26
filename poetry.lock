@@ -45,13 +45,13 @@ files = [
 
 [[package]]
 name = "astar-utils"
-version = "0.2.0b1"
+version = "0.2.0"
 description = "Contains commonly-used utilities for AstarVienna's projects."
 optional = false
 python-versions = ">=3.9,<4.0"
 files = [
-    {file = "astar_utils-0.2.0b1-py3-none-any.whl", hash = "sha256:b59aaeb5920333c528aa7bef07a04a009e9a1e668e84e3cfbc09fdd8dae7fdda"},
-    {file = "astar_utils-0.2.0b1.tar.gz", hash = "sha256:f9a5fd493623c36d79f7df97f011e073fadddfe9ea94fe35d0abee82bbbf1a2b"},
+    {file = "astar_utils-0.2.0-py3-none-any.whl", hash = "sha256:c3518c857ece09d86159e7ee91f3f7933759eb679ff618c69607d0d71f0cf2b5"},
+    {file = "astar_utils-0.2.0.tar.gz", hash = "sha256:d65cfd776df533710b46e256febe1b1b891f21827fd9dcf21867fdb7b0bc8e93"},
 ]
 
 [package.dependencies]
@@ -2679,4 +2679,4 @@ syn = ["synphot"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "dd83426796de3759d32f8b8c9812f311a0410461e9b0273e07349db846cdbbe9"
+content-hash = "93aeac8cc9787a7661b791a91e64431fb2b77d4f4294aa22194ae85825f31deb"
