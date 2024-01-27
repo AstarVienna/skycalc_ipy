@@ -106,6 +106,7 @@ html_theme = "sphinx_book_theme"
 html_theme_options = {
     "repository_url": "https://github.com/AstarVienna/skycalc_ipy",
     "use_repository_button": True,
+    "home_page_in_toc": True,
 }
 html_logo = "_static/logos/logo_skycalc_ipy_t.png"
 html_title = "skycalc_ipy"
@@ -119,8 +120,9 @@ html_static_path = ['_static']
 # to template names.
 html_sidebars = {
     "**": [
-        "sbt-sidebar-nav.html",
         "navbar-logo.html",
+        "search-field.html",
+        "sbt-sidebar-nav.html",
     ]
 }
 
