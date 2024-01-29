@@ -166,6 +166,7 @@ we can set the ``update_values`` flag to ``True``::
     1.07729
 
 .. warning:: The Almanac currently returns `msolflux=-1` for dates after 2019-01-31.
+    :class: margin
 
     This indicates an error on the Almanac side. The only way to deal with this
     (without being super hacky) is for the user to reset the average solar flux
