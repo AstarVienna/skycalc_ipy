@@ -38,16 +38,15 @@ would have something like this:
 
     tbl = SkyCalc().get_sky_spectrum()
 
-    plt.figure(figsize=(8,8))
-    plt.subplot(211)
-    plt.plot(tbl["lam"], tbl["trans"])
-    plt.xlabel("Wavelength [um]")
-    plt.ylabel("Transmission")
-    plt.subplot(212)
-    plt.plot(tbl["lam"], tbl["flux"])
-    plt.xlabel("Wavelength [um]")
-    plt.ylabel("Emission [ph s-1 m-2 um-1 arcsec-2]")
-    plt.semilogy()
+    fig, ax = plt.subplots(2, 1, sharex=True, figsize=(8,8))
+    fig.subplots_adjust(hspace=0)
+    ax[0].plot(tbl["lam"], tbl["trans"], lw=1)
+    ax[1].semilogy(tbl["lam"], tbl["flux"], lw=1)
+    ax[0].set_ylabel("Transmission")
+    ax[1].set_ylabel(f"Emission [{tbl['flux'].unit}]")
+    ax[1].set_xlabel(f"Wavelength [{tbl['lam'].unit}]")
+    ax[0].grid(True, ls=":")
+    ax[1].grid(True, ls=":")
 
 
 Returned FITS file
@@ -202,20 +201,20 @@ In full we have:
 .. plot::
     :include-source:
 
-    >>> import matplotlib.pyplot as plt
-    >>> from skycalc_ipy import SkyCalc
-    >>>
-    >>> skycalc = SkyCalc()
-    >>> skycalc.get_almanac_data(ra=83.8221, dec=-5.3911,
-    ...                          date="2017-12-24T04:00:00",
-    ...                          update_values=True)
-    >>> # skycalc["msolflux"] = 130       # [sfu] For dates after 2019-01-31
-    >>> tbl = skycalc.get_sky_spectrum()
-    >>>
-    >>> plt.plot(tbl["lam"], tbl["flux"])
-    >>> plt.xlabel("Wavelength " + str(tbl["lam"].unit))
-    >>> plt.ylabel("Flux " + str(tbl["flux"].unit))
-    >>> plt.semilogy()
+    import matplotlib.pyplot as plt
+    from skycalc_ipy import SkyCalc
+
+    skycalc = SkyCalc()
+    skycalc.get_almanac_data(ra=83.8221, dec=-5.3911,
+                             date="2017-12-24T04:00:00",
+                             update_values=True)
+    # skycalc["msolflux"] = 130       # [sfu] For dates after 2019-01-31
+    tbl = skycalc.get_sky_spectrum()
+
+    plt.semilogy(tbl["lam"], tbl["flux"])
+    plt.xlabel(f"Wavelength [{tbl['lam'].unit}]")
+    plt.ylabel(f"Flux [{tbl['flux'].unit}]")
+    plt.grid(True, ls=":")
 
 
 Customs lists of values
