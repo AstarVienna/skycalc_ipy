@@ -244,7 +244,12 @@ class AlmanacQuery(ESOQueryBase):
         return almdata
 
     def query(self):
-        """Deprecated feature. Class is now callable, use that instead."""
+        """Deprecated feature.
+
+        .. deprecated:: v0.4.0
+
+        This method is deprecated, Class is now callable, use that instead.
+        """
         warnings.warn("The .query() method is deprecated and will be removed "
                       "in a future release. Please simply call the instance.",
                       DeprecationWarning, stacklevel=2)
@@ -425,7 +430,12 @@ class SkyModel(ESOQueryBase):
             logger.exception("Exception raised trying to write fits file.")
 
     def getdata(self):
-        """Deprecated feature, just use the .data attribute."""
+        """Deprecated feature.
+
+        .. deprecated:: v0.4.0
+
+        This method is deprecated, just use the .data attribute instead.
+        """
         warnings.warn("The .getdata method is deprecated and will be removed "
                       "in a future release. Use the identical .data attribute "
                       "instead.", DeprecationWarning, stacklevel=2)
@@ -503,14 +513,24 @@ class SkyModel(ESOQueryBase):
             logger.error("Parameter validation error: %s", res["error"])
 
     def call(self):
-        """Deprecated feature, just call the instance."""
+        """Deprecated feature.
+
+        .. deprecated:: v0.4.0
+
+        This method is deprecated, just call the instance instead.
+        """
         warnings.warn("The .call() method is deprecated and will be removed "
                       "in a future release. Please simply call the instance.",
                       DeprecationWarning, stacklevel=2)
         self()
 
     def callwith(self, newparams):
-        """Deprecated feature, just call the instance."""
+        """Deprecated feature.
+
+        .. deprecated:: v0.4.0
+
+        This method is deprecated, just call the instance instead.
+        """
         warnings.warn("The .callwith(args) method is deprecated and will be "
                       "removed in a future release. Please simply call the "
                       "instance with optional kwargs instead.",
