@@ -69,6 +69,10 @@ including::
     >>> tbl = skycalc.get_sky_spectrum(return_type="synphot")
     >>> tbl = skycalc.get_sky_spectrum(return_type="tab-ext")
 
+.. note::
+    :class: margin
+
+    The ``synphot`` output format requires installing `skycalc_ipy` with the `synphot` extra, unless ``synphot`` is already installed in the system anyway.
 
 ============== ======== ========
 Value          Shortcut Returned
@@ -81,10 +85,6 @@ fits           fit      an ``astropy.HDUList`` object with a ``BinTableHDU``
 none           none     a ``None`` object
 ============== ======== ========
 
-.. note::
-    :class: margin
-
-    The ``synphot`` output format requires installing `skycalc_ipy` with the `synphot` extra, unless ``synphot`` is already installed in the system anyway.
 
 Editing parameters
 ------------------
@@ -154,6 +154,15 @@ based on the recorded atmospheric conditions using the ESO Almanac service::
      'ecl_lat': -28.6776,
      'observatory': 'paranal'}
 
+.. warning:: The Almanac currently returns `msolflux=-1` for dates after 2023-04-30.
+    :class: margin
+
+    This indicates an error on the Almanac side. The only way to deal with this
+    (without being super hacky) is for the user to reset the average solar flux
+    to something normal before proceeding::
+
+        >>> skycalc["msolflux"] = 130       # sfu
+
 By default the returned values **DO NOT** overwrite the current ``skycalc``
 values. This is to give us the chance to review the data before adding it to
 our :class:`SkyCalc` query. If we already know that we want these values,
@@ -164,15 +173,6 @@ we can set the ``update_values`` flag to ``True``::
                                  update_values=True)
     >>> skycalc["airmass"]
     1.07729
-
-.. warning:: The Almanac currently returns `msolflux=-1` for dates after 2019-01-31.
-    :class: margin
-
-    This indicates an error on the Almanac side. The only way to deal with this
-    (without being super hacky) is for the user to reset the average solar flux
-    to something normal before proceeding::
-
-        >>> skycalc["msolflux"] = 130       # sfu
 
 If we would like to review the almanac data (i.e. default
 ``update_values=False``) and then decide to add them to our :class:`SkyCalc`
