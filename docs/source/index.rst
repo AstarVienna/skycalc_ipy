@@ -103,20 +103,13 @@ Dependencies
 
 The following packages are required for normal operation:
 
-* :mod:`requests`
+* :mod:`httpx`
 * :mod:`pyyaml`
 * :mod:`numpy`
 * :mod:`astropy`
+* :mod:`astar-utils`
 
 The following packages are optional:
 
 * :mod:`matplotlib`
 * :mod:`synphot`
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
