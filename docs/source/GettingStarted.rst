@@ -14,12 +14,19 @@ and then call the :meth:`.get_sky_spectrum()` method to get a default data set
 from the ESO SkyCalc server::
 
     >>> tbl = skycalc.get_sky_spectrum()
-    >>> print(tbl[:2])
-     lam         trans                 flux
-      um                      ph / (arcsec2 m2 s um)
-    ----- ------------------- ----------------------
-      0.3 0.03407993552308744     14.237968836733746
-    0.301 0.04638097547092783     19.640944348240403
+    >>> print(tbl[:5])
+     lam    trans           flux         
+      nm      1    ph / (s um arcsec2 m2)
+    ------ ------- ----------------------
+    300.00 0.03408                 13.145
+    300.30 0.03638                 13.233
+    300.60 0.03900                 15.765
+    300.90 0.04412                 17.626
+    301.20 0.05093                 22.844
+
+.. versionchanged:: v0.2.0
+
+   The `lam` column is now in nm, following the change by the ESO server.
 
 If we were to plot up the columns ``trans`` and ``flux`` against ``lam`` we
 would have something like this:
@@ -74,6 +81,10 @@ fits           fit      an ``astropy.HDUList`` object with a ``BinTableHDU``
 none           none     a ``None`` object
 ============== ======== ========
 
+.. note::
+    :class: margin
+
+    The ``synphot`` output format requires installing `skycalc_ipy` with the `synphot` extra, unless ``synphot`` is already installed in the system anyway.
 
 Editing parameters
 ------------------
