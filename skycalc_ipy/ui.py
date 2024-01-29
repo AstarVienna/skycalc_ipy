@@ -156,6 +156,11 @@ class SkyCalc:
         if tbl["lam"].unit is None:
             tbl["lam"].unit = u.um
 
+        # Set formatting to reasonable precision
+        tbl["lam"].format = "%.2f"
+        tbl["trans"].format = "%.5f"
+        tbl["flux"].format = "%.3f"
+
         for colname in tbl.colnames:
             if "flux" in colname:
                 # Somehow, astropy doesn't quite parse the unit correctly.
