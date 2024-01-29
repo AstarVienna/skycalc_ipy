@@ -34,38 +34,54 @@ on the ESO SkyCalc server. For references to SkyCalc see `ESO SkyCalc`_,
    GettingStarted
    Reference API <reference/skycalc_ipy>
 
-.. note:: v0.2.0: Hotfix for new ESO ETC server.
+.. versionchanged:: v0.4.0
 
-    The new ESO ETC server uses different units, which are now used.
+   Drop support for Python 3.8.
 
-.. note:: v0.1.5: Hotfix to replace ESO ETC server URL.
+.. versionchanged:: v0.2.0
 
-    Skycalc now uses https://etimecalret-002.eso.org as server, #25.
+   Hotfix for new ESO ETC server.
 
-.. note:: v0.1.4: Drop support for Python 3.7.
+   The new ESO ETC server uses different units, which are now used.
 
-    Skycalc now uses `pyproject.toml`, and only supports Python 3.8+.
+.. versionchanged:: v0.1.5
 
-.. note:: v0.1.3: Updated default values for `wmax`, `wgrid_mode`, `wres`
+   Hotfix to replace ESO ETC server URL.
 
-    SkyCalc-ipy now uses a logarithmic wavelength binning with R=1000 over the
-    fully available SkyCalc wavelength range of [0.3, 30] um
+   Skycalc now uses https://etimecalret-002.eso.org as server, #25.
 
-    - `wmax`: --> `30000  # [nm]`
-    - `wgrid_mode`: --> `fixed_spectral_resolution`
-    - `wres`: --> `1000  wave/dwave`
+.. versionchanged:: v0.1.4
 
-.. note:: v0.1.3: No longer saves a temporary FITS file to disk.
+   Drop support for Python 3.7.
 
-    SkyCalc now uses astropy to download the fits file from the SkyCalc server.
-    The HDUList is now stored internally in `<SkyCalc>.last_skycalc_response`.
+   Skycalc now uses `pyproject.toml`, and only supports Python 3.8+.
 
-.. note:: v0.1.2: Upgrade fixes PyYaml warning/error for PyYaml >=6.0
+.. versionchanged:: v0.1.3
 
-    SkyCalc-ipy v0.1.1 is only compatible with versions of PyYaml <=5.4.
-    PyYaml v6+ removed backwards compatibility by forcing the user to pass a
-    Loader object when reading YAML files. SkyCalc-ipy v0.1.0 and v0.1.1 does
-    not do this.
+   Updated default values for `wmax`, `wgrid_mode`, `wres`
+
+   SkyCalc-ipy now uses a logarithmic wavelength binning with R=1000 over the
+   fully available SkyCalc wavelength range of [0.3, 30] um
+
+   - `wmax`: --> `30000  # [nm]`
+   - `wgrid_mode`: --> `fixed_spectral_resolution`
+   - `wres`: --> `1000  wave/dwave`
+
+.. versionchanged:: v0.1.3
+
+   No longer saves a temporary FITS file to disk.
+
+   SkyCalc now uses astropy to download the fits file from the SkyCalc server.
+   The HDUList is now stored internally in `<SkyCalc>.last_skycalc_response`.
+
+.. versionchanged:: v0.1.2
+
+   Upgrade fixes PyYaml warning/error for PyYaml >=6.0
+
+   SkyCalc-ipy v0.1.1 is only compatible with versions of PyYaml <=5.4.
+   PyYaml v6+ removed backwards compatibility by forcing the user to pass a
+   Loader object when reading YAML files. SkyCalc-ipy v0.1.0 and v0.1.1 does
+   not do this.
 
 
 Installation
