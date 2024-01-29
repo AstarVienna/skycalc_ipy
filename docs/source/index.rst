@@ -34,6 +34,10 @@ on the ESO SkyCalc server. For references to SkyCalc see `ESO SkyCalc`_,
    GettingStarted
    Reference API <reference/skycalc_ipy>
 
+.. versionchanged:: v0.4.0
+
+   Drop support for Python 3.8.
+
 .. versionchanged:: v0.2.0
 
    Hotfix for new ESO ETC server.
