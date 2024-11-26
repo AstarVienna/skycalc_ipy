@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "skycalc-ipy"
-version = "0.5.2a1"
+version = "0.5.2"
 description = "Get atmospheric spectral information from the ESO skycalc server."
 license = "GPL-3.0-or-later"
 authors = ["Kieran Leschinski <kieran.leschinski@unive.ac.at>"]
