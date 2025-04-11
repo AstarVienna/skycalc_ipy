@@ -51,14 +51,14 @@ trio = ["trio (<0.22)"]
 
 [[package]]
 name = "astar-utils"
-version = "0.3.0"
+version = "0.3.1"
 description = "Contains commonly-used utilities for AstarVienna's projects."
 optional = false
 python-versions = "<4.0,>=3.10"
 groups = ["main"]
 files = [
-    {file = "astar_utils-0.3.0-py3-none-any.whl", hash = "sha256:473d056c4c873fbf077fcc2249f8c3d5bfd37083d9289b13dc2fde7fb6eed872"},
-    {file = "astar_utils-0.3.0.tar.gz", hash = "sha256:c7102b4347c7e4463927e0d3066f03bc6a0d784af8252599e18277c0313a8912"},
+    {file = "astar_utils-0.3.1-py3-none-any.whl", hash = "sha256:6cb6cac868ec4642130183ad3f9519cd60cf37b7326ff0bf38a19caee90d5638"},
+    {file = "astar_utils-0.3.1.tar.gz", hash = "sha256:eae7108aa508b5c6364aac7c4e6160ea13ff5d5887550477a477eb62db4c5270"},
 ]
 
 [package.dependencies]
@@ -1726,4 +1726,4 @@ syn = ["synphot"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.10"
-content-hash = "b8a4cf41d2266110180540f26b490c08dfcbff2c44b52490894012ed7fd66775"
+content-hash = "3b3c5318321ad7780c0f02c2e9ac6dccc0d77bea4081b32655016334680282b3"
