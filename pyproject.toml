@@ -20,7 +20,7 @@ classifiers = [
 
 [tool.poetry.dependencies]
 python = "^3.10"
-numpy = "^1.26.3"
+numpy = ">=1.26.3, <3"
 astropy = "^6.0.1"
 httpx = ">=0.26.0"
 pyyaml = "^6.0.1"
