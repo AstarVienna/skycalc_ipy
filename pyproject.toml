@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "skycalc-ipy"
-version = "0.5.3b0"
+version = "0.5.3b1"
 description = "Get atmospheric spectral information from the ESO skycalc server."
 license = "GPL-3.0-or-later"
 authors = ["Kieran Leschinski <kieran.leschinski@unive.ac.at>"]
@@ -20,14 +20,14 @@ classifiers = [
 
 [tool.poetry.dependencies]
 python = "^3.10"
-numpy = ">=1.26.3, <3"
-astropy = "^6.0.1"
-httpx = ">=0.26.0"
+numpy = ">=1.26.4, <3"
+astropy = "^6.1.5"
+httpx = ">=0.28.1"
 pyyaml = "^6.0.1"
 
 astar-utils = ">=0.3.1"
 
-synphot = { version = "^1.4.0", optional = true }
+synphot = { version = "^1.5.0", optional = true }
 
 [tool.poetry.group.test.dependencies]
 pytest = "^8.3.5"
@@ -38,9 +38,9 @@ matplotlib = "^3.8.2"
 optional = true
 
 [tool.poetry.group.docs.dependencies]
-sphinx = "^5.3.0"
+sphinx = ">=5.3, <8.0"
 sphinx-book-theme = "^1.1.0"
-sphinxcontrib-apidoc = "^0.4.0"
+sphinxcontrib-apidoc = ">=0.4, <0.6"
 numpydoc = "^1.6.0"
 matplotlib = "^3.8.2"
 

@@ -20,7 +20,7 @@ jobs:
       - name: Set up Poetry
         uses: abatilo/actions-poetry@v4
         with:
-          poetry-version: "1.8.3"
+          poetry-version: "2.1.3"
 
       - name: Create step summary
         run: echo "## Building $(poetry version)" >> $GITHUB_STEP_SUMMARY
@@ -61,7 +61,7 @@ jobs:
       - name: Set up Poetry
         uses: abatilo/actions-poetry@v4
         with:
-          poetry-version: "1.8.3"
+          poetry-version: "2.1.3"
 
       - name: Create step summary
         run: echo "## Publishing $(poetry version) to PyPI" >> $GITHUB_STEP_SUMMARY
