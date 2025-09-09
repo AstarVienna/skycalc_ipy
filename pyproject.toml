@@ -1,6 +1,6 @@
 [project]
 name = "skycalc-ipy"
-version = "0.5.4a1"
+version = "0.5.4"
 description = "Get atmospheric spectral information from the ESO skycalc server."
 license = {text = "GPL-3.0-or-later"}
 authors = [
