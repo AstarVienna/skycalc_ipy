@@ -13,11 +13,7 @@ maintainers = [
 ]
 readme = "README.md"
 keywords = [ "astronomy" ]
-classifiers = [
-    "Intended Audience :: Science/Research",
-    "Operating System :: OS Independent",
-    "Topic :: Scientific/Engineering :: Astronomy",
-]
+dynamic = [ "classifiers" ]
 requires-python = ">=3.10, <3.13"
 dependencies = [
     "numpy (>=1.26.4,<2.3.0)",
@@ -31,9 +27,18 @@ dependencies = [
 syn = [ "synphot>=1.5.0,<2.0.0" ]
 
 [project.urls]
-repository = "https://github.com/AstarVienna/skycalc_ipy"
-documentation = "https://skycalc-ipy.readthedocs.io/en/latest/"
+Repository = "https://github.com/AstarVienna/skycalc_ipy"
+Documentation = "https://skycalc-ipy.readthedocs.io/en/latest/"
 "Bug Tracker" = "https://github.com/AstarVienna/skycalc_ipy/issues"
+Changelog = "https://github.com/AstarVienna/skycalc_ipy/releases"
+
+
+[tool.poetry]
+classifiers = [
+    "Intended Audience :: Science/Research",
+    "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering :: Astronomy",
+]
 
 [tool.poetry.group.test.dependencies]
 pytest = "^8.3.5"
