@@ -51,20 +51,20 @@ trio = ["trio (<0.22)"]
 
 [[package]]
 name = "astar-utils"
-version = "0.3.3"
+version = "0.4.0"
 description = "Contains commonly-used utilities for AstarVienna's projects."
 optional = false
-python-versions = "<4.0,>=3.10"
+python-versions = "<3.14,>=3.10"
 groups = ["main"]
 files = [
-    {file = "astar_utils-0.3.3-py3-none-any.whl", hash = "sha256:b1abb5fb9a20b73f796d204b3e054ddcb29c27c26a6d01eb6943abd671a248a8"},
-    {file = "astar_utils-0.3.3.tar.gz", hash = "sha256:14efaf744f13a695498170ceadbf979c8d71c3c06b204c8bbce1db468f3cccc4"},
+    {file = "astar_utils-0.4.0-py3-none-any.whl", hash = "sha256:81b9614c548f36614709c2c490220e3e76ec9d823dec66ef357e7ffa6735e797"},
+    {file = "astar_utils-0.4.0.tar.gz", hash = "sha256:8effb9fd001f5d0980f7bf9ea3ebd69ef415f949741f78d0afbe0eafa25302c1"},
 ]
 
 [package.dependencies]
-colorama = ">=0.4.6,<0.5.0"
-more-itertools = ">=10.1.0,<11.0.0"
-pyyaml = ">=6.0.1,<7.0.0"
+colorama = ">=0.4.6,<1.0"
+more-itertools = ">=10.2.0,<11.0.0"
+pyyaml = ">=6.0.2,<7.0.0"
 
 [[package]]
 name = "astropy"
@@ -1070,14 +1070,14 @@ tomli = {version = ">=1.1.0", markers = "python_version < \"3.11\""}
 
 [[package]]
 name = "packaging"
-version = "23.2"
+version = "25.0"
 description = "Core utilities for Python packages"
 optional = false
-python-versions = ">=3.7"
+python-versions = ">=3.8"
 groups = ["main", "docs", "test"]
 files = [
-    {file = "packaging-23.2-py3-none-any.whl", hash = "sha256:8c491190033a9af7e1d931d0b5dacc2ef47509b34dd0de67ed209b5203fc88c7"},
-    {file = "packaging-23.2.tar.gz", hash = "sha256:048fb0e9405036518eaaf48a55953c750c11e1a1b68e0dd1a9d62ed0c092cfc5"},
+    {file = "packaging-25.0-py3-none-any.whl", hash = "sha256:29572ef2b1f17581046b3a2227d5c611fb25ec70ca1ba8554b24b0e69331a484"},
+    {file = "packaging-25.0.tar.gz", hash = "sha256:d443872c98d677bf60f6a1f2f8c1cb748e8fe762d2bf9d3148b5599295b0fc4f"},
 ]
 
 [[package]]
@@ -1895,5 +1895,5 @@ syn = ["synphot"]
 
 [metadata]
 lock-version = "2.1"
-python-versions = ">=3.10, <3.13"
-content-hash = "76414fc2c10f86ebfe035fcd95667e71139fc1b206ced10b76187b2b67558c3a"
+python-versions = ">=3.10,<3.14"
+content-hash = "b8eb65a104dc361975a040f3ac6fdbaa95fbb25b365159a0616a8275fe353f1e"
