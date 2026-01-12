@@ -1,9 +1,10 @@
+# -*- coding: utf-8 -*-
+from datetime import datetime as dt
+
 import pytest
-from pytest import raises
+
 from skycalc_ipy import ui
 from skycalc_ipy import core
-
-from datetime import datetime as dt
 
 
 @pytest.fixture
@@ -19,7 +20,7 @@ def skp_basic(skp):
 
 class TestAlmanacInit:
     def test_throws_exception_when_passed_virgin_SkyCalcParams(self, skp):
-        with raises(ValueError):
+        with pytest.raises(ValueError):
             core.AlmanacQuery(skp)
 
     def test_passes_for_valid_SkyCalcParams_with_date(self, skp):
@@ -37,7 +38,7 @@ class TestAlmanacInit:
 
     def test_throws_exception_when_date_and_mjd_are_empty(self, skp_basic):
         skp_basic.update({"mjd": None, "date": None})
-        with raises(ValueError):
+        with pytest.raises(ValueError):
             core.AlmanacQuery(skp_basic)
 
     def test_passes_for_date_as_datetime_object(self, skp_basic):
@@ -48,12 +49,12 @@ class TestAlmanacInit:
 
     def test_throws_exception_when_date_is_unintelligible(self, skp_basic):
         skp_basic.update({"date": "bogus"})
-        with raises(ValueError):
+        with pytest.raises(ValueError):
             core.AlmanacQuery(skp_basic)
 
     def test_throws_exception_when_mjd_is_unintelligible(self, skp_basic):
         skp_basic.update({"mjd": "bogus"})
-        with raises(ValueError):
+        with pytest.raises(ValueError):
             core.AlmanacQuery(skp_basic)
 
 

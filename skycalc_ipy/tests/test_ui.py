@@ -1,13 +1,13 @@
+# -*- coding: utf-8 -*-
 from pathlib import Path
 from collections.abc import Sequence, Mapping
 
 import pytest
-from pytest import raises
-from skycalc_ipy import ui
 from astropy import table
 from astropy.io import fits
 import synphot as sp
 
+from skycalc_ipy import ui
 
 PATH_HERE = Path(__file__).parent
 
@@ -36,7 +36,7 @@ class TestLoadYaml:
         assert yaml_dict["season"][0] == 0
 
     def test_throws_exception_for_nonexistent_file(self):
-        with raises(ValueError):
+        with pytest.raises(ValueError):
             ui.load_yaml(Path("bogus.yaml"))
 
     def test_accepts_string_block_input(self):
@@ -110,7 +110,7 @@ class TestSkyCalcParamsGetSkySpectrum:
 
     def test_throws_exception_for_invalid_parameters(self, skp):
         skp["airmass"] = 9001
-        with raises(ValueError):
+        with pytest.raises(ValueError):
             skp.get_sky_spectrum()
 
     @pytest.mark.webtest
@@ -164,27 +164,27 @@ class TestSkyCalcParamsGetAlmanacData:
         assert skp["observatory"] == "paranal"
 
     def test_raise_error_if_both_date_and_mjd_are_empty(self, skp):
-        with raises(ValueError):
+        with pytest.raises(ValueError):
             skp.get_almanac_data(180, 0)
 
 
 class TestFunctionGetAlmanacData:
     @pytest.mark.webtest
     def test_throws_exception_for_invalid_ra(self):
-        with raises(ValueError):
+        with pytest.raises(ValueError):
             ui.get_almanac_data(ra=-10, dec=0, mjd=50000)
 
     @pytest.mark.webtest
     def test_throws_exception_for_invalid_dec(self):
-        with raises(ValueError):
+        with pytest.raises(ValueError):
             ui.get_almanac_data(ra=180, dec=100, mjd=50000)
 
     def test_throws_exception_for_invalid_mjd(self):
-        with raises(ValueError):
+        with pytest.raises(ValueError):
             ui.get_almanac_data(ra=180, dec=0, mjd="s")
 
     def test_throws_exception_for_invalid_date(self):
-        with raises(ValueError):
+        with pytest.raises(ValueError):
             ui.get_almanac_data(ra=180, dec=0, date="2000-0-0T0:0:0")
 
     @pytest.mark.webtest
@@ -203,7 +203,7 @@ class TestFunctionGetAlmanacData:
         )
         assert isinstance(out_dict, Mapping)
         assert len(out_dict) == 39
-        assert type(out_dict["moon_sun_sep"]) == float
+        assert type(out_dict["moon_sun_sep"]) is float
 
     @pytest.mark.webtest
     def test_return_only_almanac_dict_when_flag_false(self):
