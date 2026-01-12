@@ -26,8 +26,9 @@ def skp_small():
 
 @pytest.fixture
 def basic_almanac_no_update(skp):
-    return skp.get_almanac_data(ra=180, dec=0, mjd=50000,
-                                observatory="lasilla", update_values=False)
+    return skp.get_almanac_data(
+        ra=180, dec=0, mjd=50000, observatory="lasilla", update_values=False
+    )
 
 
 class TestLoadYaml:
@@ -63,8 +64,10 @@ class TestSkycalcParamsInit:
     def test_print_comments_mutliple_keywords(self, skp, capsys):
         skp.print_comments("airmass", "season")
         output = capsys.readouterr()[0].strip()
-        expected = ("airmass : airmass in range [1.0, 3.0]\n"
-                    " season : 0=all year, 1=dec/jan,2=feb/mar...")
+        expected = (
+            "airmass : airmass in range [1.0, 3.0]\n"
+            " season : 0=all year, 1=dec/jan,2=feb/mar..."
+        )
         assert output == expected
 
     def test_print_comments_misspelled_keyword(self, skp, capsys):
@@ -230,9 +233,10 @@ class TestDocExamples:
     def test_example(self):
         skycalc = ui.SkyCalc()
         skycalc.get_almanac_data(
-            ra=83.8221, dec=-5.3911,
+            ra=83.8221,
+            dec=-5.3911,
             date="2017-12-24T04:00:00",
-            update_values=True
+            update_values=True,
         )
         tbl = skycalc.get_sky_spectrum()
         assert len(tbl) == 4606
