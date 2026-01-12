@@ -10,6 +10,7 @@ import numpy as np
 
 from astropy import units as u
 from astropy.io import fits
+from astropy.table import Table
 
 from astar_utils import get_logger
 
@@ -140,8 +141,6 @@ class SkyCalc:
         - "fits": hdu (HDUList)
 
         """
-        from astropy import table
-
         if not self.validate_params():
             raise ValueError(
                 "Object contains invalid parameters. Not calling ESO")
@@ -152,7 +151,12 @@ class SkyCalc:
         if filename is not None:
             skm.write(filename)
 
-        tbl = table.Table.read(skm.data)
+        with warnings.catch_warnings():
+            warnings.filterwarnings(
+                "ignore", "'ph/s/m2/micron/arcsec2'", u.UnitsWarning)
+            warnings.filterwarnings("ignore", "'1'", u.UnitsWarning)
+            tbl = Table.read(skm.data)
+
         if tbl["lam"].unit is None:
             tbl["lam"].unit = u.um
 
@@ -190,7 +194,7 @@ class SkyCalc:
             if "ext" in return_type:
                 tbl_return = tbl
             else:
-                tbl_small = table.Table()
+                tbl_small = Table()
                 tbl_small.add_columns([tbl["lam"], tbl["trans"], tbl["flux"]])
                 tbl_return = tbl_small
 
