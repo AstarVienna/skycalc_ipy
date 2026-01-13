@@ -194,7 +194,10 @@ class SkyCalc:
             "EDIM": 1,
         }
 
-        params = {k: (self.values[k], self.comments[k]) for k in self.keys}
+        params = {
+            f"hierarch {k}": (self.values[k], self.comments[k])
+            for k in self.keys
+        }
         meta_data.update(params)
         self.table.meta.update(meta_data)
 

@@ -68,8 +68,6 @@ filterwarnings = [
     "error",
     # Should fix at some point, see #106
     "ignore::ResourceWarning",
-    # Should fix at some point
-    "default:Keyword name*:astropy.io.fits.verify.VerifyWarning",
 ]
 
 [tool.coverage.report]
