@@ -1,13 +1,13 @@
+# -*- coding: utf-8 -*-
 from pathlib import Path
 from collections.abc import Sequence, Mapping
 
 import pytest
-from pytest import raises
-from skycalc_ipy import ui
 from astropy import table
 from astropy.io import fits
 import synphot as sp
 
+from skycalc_ipy import ui
 
 PATH_HERE = Path(__file__).parent
 
@@ -26,8 +26,9 @@ def skp_small():
 
 @pytest.fixture
 def basic_almanac_no_update(skp):
-    return skp.get_almanac_data(ra=180, dec=0, mjd=50000,
-                                observatory="lasilla", update_values=False)
+    return skp.get_almanac_data(
+        ra=180, dec=0, mjd=50000, observatory="lasilla", update_values=False
+    )
 
 
 class TestLoadYaml:
@@ -36,7 +37,7 @@ class TestLoadYaml:
         assert yaml_dict["season"][0] == 0
 
     def test_throws_exception_for_nonexistent_file(self):
-        with raises(ValueError):
+        with pytest.raises(ValueError):
             ui.load_yaml(Path("bogus.yaml"))
 
     def test_accepts_string_block_input(self):
@@ -63,8 +64,10 @@ class TestSkycalcParamsInit:
     def test_print_comments_mutliple_keywords(self, skp, capsys):
         skp.print_comments("airmass", "season")
         output = capsys.readouterr()[0].strip()
-        expected = ("airmass : airmass in range [1.0, 3.0]\n"
-                    " season : 0=all year, 1=dec/jan,2=feb/mar...")
+        expected = (
+            "airmass : airmass in range [1.0, 3.0]\n"
+            " season : 0=all year, 1=dec/jan,2=feb/mar..."
+        )
         assert output == expected
 
     def test_print_comments_misspelled_keyword(self, skp, capsys):
@@ -110,7 +113,7 @@ class TestSkyCalcParamsGetSkySpectrum:
 
     def test_throws_exception_for_invalid_parameters(self, skp):
         skp["airmass"] = 9001
-        with raises(ValueError):
+        with pytest.raises(ValueError):
             skp.get_sky_spectrum()
 
     @pytest.mark.webtest
@@ -164,27 +167,27 @@ class TestSkyCalcParamsGetAlmanacData:
         assert skp["observatory"] == "paranal"
 
     def test_raise_error_if_both_date_and_mjd_are_empty(self, skp):
-        with raises(ValueError):
+        with pytest.raises(ValueError):
             skp.get_almanac_data(180, 0)
 
 
 class TestFunctionGetAlmanacData:
     @pytest.mark.webtest
     def test_throws_exception_for_invalid_ra(self):
-        with raises(ValueError):
+        with pytest.raises(ValueError):
             ui.get_almanac_data(ra=-10, dec=0, mjd=50000)
 
     @pytest.mark.webtest
     def test_throws_exception_for_invalid_dec(self):
-        with raises(ValueError):
+        with pytest.raises(ValueError):
             ui.get_almanac_data(ra=180, dec=100, mjd=50000)
 
     def test_throws_exception_for_invalid_mjd(self):
-        with raises(ValueError):
+        with pytest.raises(ValueError):
             ui.get_almanac_data(ra=180, dec=0, mjd="s")
 
     def test_throws_exception_for_invalid_date(self):
-        with raises(ValueError):
+        with pytest.raises(ValueError):
             ui.get_almanac_data(ra=180, dec=0, date="2000-0-0T0:0:0")
 
     @pytest.mark.webtest
@@ -203,7 +206,7 @@ class TestFunctionGetAlmanacData:
         )
         assert isinstance(out_dict, Mapping)
         assert len(out_dict) == 39
-        assert type(out_dict["moon_sun_sep"]) == float
+        assert type(out_dict["moon_sun_sep"]) is float
 
     @pytest.mark.webtest
     def test_return_only_almanac_dict_when_flag_false(self):
@@ -230,9 +233,10 @@ class TestDocExamples:
     def test_example(self):
         skycalc = ui.SkyCalc()
         skycalc.get_almanac_data(
-            ra=83.8221, dec=-5.3911,
+            ra=83.8221,
+            dec=-5.3911,
             date="2017-12-24T04:00:00",
-            update_values=True
+            update_values=True,
         )
         tbl = skycalc.get_sky_spectrum()
         assert len(tbl) == 4606

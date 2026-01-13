@@ -64,6 +64,13 @@ addopts = "--strict-markers"
 markers = [
     "webtest: marks tests as requiring network (deselect with '-m \"not webtest\"')",
 ]
+filterwarnings = [
+    "error",
+    # Should fix at some point, see #106
+    "ignore::ResourceWarning",
+    # Should fix at some point
+    "default:Keyword name*:astropy.io.fits.verify.VerifyWarning",
+]
 
 [tool.coverage.report]
 omit = ["skycalc_ipy/tests/*"]
