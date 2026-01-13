@@ -4,6 +4,7 @@
 import warnings
 from pathlib import Path
 from datetime import datetime as dt
+from typing import Literal
 
 import yaml
 import numpy as np
@@ -49,6 +50,7 @@ class SkyCalc:
         self.comments = {pp: params[pp][4] for pp in params}
 
         self.last_skycalc_response = None
+        self.table = None
 
     def print_comments(self, *param_names):
         """Print descriptions of parameters. Print all if no names given."""
@@ -74,8 +76,9 @@ class SkyCalc:
                     invalid_keys.append(key)
 
                     if self.check_type[key] == "nearest":
-                        nearest = np.argmin(np.abs(self.allowed[key]
-                                                   - self.values[key]))
+                        nearest = np.argmin(
+                            np.abs(self.allowed[key] - self.values[key])
+                        )
                         self.values[key] = self.allowed[key][nearest]
 
             elif self.check_type[key] in {"choice", "flag"}:
@@ -115,20 +118,26 @@ class SkyCalc:
 
         return result
 
-    def get_sky_spectrum(self, return_type="table", filename=None):
+    def get_sky_spectrum(
+        self,
+        return_type: Literal["table", "array", "synphot", "fits"] = "table",
+        filename: Path | str | None = None,
+    ):
         """
         Retrieve a fits.HDUList object from the SkyCalc server.
 
         The HDUList can be returned in a variety of formats.
 
-        As of v0.1.3 the HDUList is no longer saved to disk.
-        Rather it is stored in the attribute <SkyCalc>.last_skycalc_response.
+        .. versionchanged:: 0.1.3
+
+           As of v0.1.3 the HDUList is no longer saved to disk.
+           Rather it is stored in the attribute <SkyCalc>.last_skycalc_response.
 
         Parameters
         ----------
         return_type : str
             ["table", "array", "synphot", "fits"]
-        filename : str, optional
+        filename : Path, str, optional
             Default None. If not None, the returned fits.HDUList object is
             saved to disk under this path.
 
@@ -155,24 +164,24 @@ class SkyCalc:
             warnings.filterwarnings(
                 "ignore", "'ph/s/m2/micron/arcsec2'", u.UnitsWarning)
             warnings.filterwarnings("ignore", "'1'", u.UnitsWarning)
-            tbl = Table.read(skm.data)
+            self.table = Table.read(skm.data)
 
-        if tbl["lam"].unit is None:
-            tbl["lam"].unit = u.um
+        if self.table["lam"].unit is None:
+            self.table["lam"].unit = u.um
 
         # Set formatting to reasonable precision
-        tbl["lam"].format = "%.2f"
-        tbl["trans"].format = "%.5f"
-        tbl["flux"].format = "%.3f"
+        self.table["lam"].format = "%.2f"
+        self.table["trans"].format = "%.5f"
+        self.table["flux"].format = "%.3f"
 
-        for colname in tbl.colnames:
+        for colname in self.table.colnames:
             if "flux" in colname:
                 # Somehow, astropy doesn't quite parse the unit correctly.
                 # Still, we shouldn't blindly overwrite it, so at least check.
-                funit = tbl[colname].unit
+                funit = self.table[colname].unit
                 if str(funit) not in ("ph/s/m2/micron/arcsec2", "None"):
                     raise ValueError(f"Unexpected flux unit: {funit}")
-                tbl[colname].unit = u.Unit("ph s-1 m-2 um-1 arcsec-2")
+                self.table[colname].unit = u.Unit("ph s-1 m-2 um-1 arcsec-2")
 
         date_created = dt.now().strftime("%Y-%m-%dT%H:%M:%S")
         meta_data = {
@@ -187,60 +196,68 @@ class SkyCalc:
 
         params = {k: (self.values[k], self.comments[k]) for k in self.keys}
         meta_data.update(params)
+        self.table.meta.update(meta_data)
 
         if "tab" in return_type:
-            tbl.meta.update(meta_data)
-
-            if "ext" in return_type:
-                tbl_return = tbl
-            else:
-                tbl_small = Table()
-                tbl_small.add_columns([tbl["lam"], tbl["trans"], tbl["flux"]])
-                tbl_return = tbl_small
-
-            return tbl_return
+            return self._make_sky_table(return_type)
 
         if "arr" in return_type:
-            wave = tbl["lam"].data * tbl["lam"].unit
-            trans = tbl["trans"].data
-            flux = tbl["flux"].data * tbl["flux"].unit
-
-            return wave, trans, flux
+            return self._make_sky_array()
 
         if "syn" in return_type:
-            import synphot as sp
-
-            trans = sp.SpectralElement(
-                sp.Empirical1D,
-                points=tbl["lam"].data * tbl["lam"].unit,
-                lookup_table=tbl["trans"].data,
-            )
-
-            funit = u.Unit("ph s-1 m-2 um-1")
-            flux = sp.SourceSpectrum(
-                sp.Empirical1D,
-                points=tbl["lam"].data * tbl["lam"].unit,
-                lookup_table=tbl["flux"].data * funit,
-            )
-            logger.warning(
-                "Synphot doesn't accept surface brightnesses \n"
-                "The resulting spectrum should be multiplied by arcsec-2"
-            )
-
-            return trans, flux
+            return self._make_sky_synphot()
 
         if "fit" in return_type:
-            hdu0 = fits.PrimaryHDU()
-            for key, meta_data_value in meta_data.items():
-                hdu0.header[key] = meta_data_value
+            return self._make_sky_fits()
 
-            with warnings.catch_warnings():
-                warnings.filterwarnings("ignore", "'1'", u.UnitsWarning)
-                hdu1 = fits.table_to_hdu(tbl)
+        raise ValueError("return_type not understood")
 
-            hdu = fits.HDUList([hdu0, hdu1])
+    def _make_sky_table(self, return_type) -> Table:
+        if "ext" in return_type:  # undocumented, untested and unused??
+            return self.table
+        return self.table[["lam", "trans", "flux"]]
 
-            return hdu
+    def _make_sky_array(self):
+        wave = self.table["lam"].data * self.table["lam"].unit
+        trans = self.table["trans"].data
+        flux = self.table["flux"].data * self.table["flux"].unit
+
+        return wave, trans, flux
+
+    def _make_sky_synphot(self):
+        import synphot as sp  # import here because extra dependency
+
+        trans = sp.SpectralElement(
+            sp.Empirical1D,
+            points=self.table["lam"].data * self.table["lam"].unit,
+            lookup_table=self.table["trans"].data,
+        )
+
+        funit = u.Unit("ph s-1 m-2 um-1")
+        flux = sp.SourceSpectrum(
+            sp.Empirical1D,
+            points=self.table["lam"].data * self.table["lam"].unit,
+            lookup_table=self.table["flux"].data * funit,
+        )
+        logger.warning(
+            "Synphot doesn't accept surface brightnesses \n"
+            "The resulting spectrum should be multiplied by arcsec-2"
+        )
+
+        return trans, flux
+
+    def _make_sky_fits(self):
+        hdu0 = fits.PrimaryHDU()
+        meta_data = self.table.meta
+        comment = meta_data.pop("comments")  # doesn't work in .update()
+        hdu0.header.update(meta_data)
+        hdu0.header["COMMENT"] = comment
+
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", "'1'", u.UnitsWarning)
+            hdu1 = fits.table_to_hdu(self.table)
+
+        return fits.HDUList([hdu0, hdu1])
 
     def update(self, kwargs):
         self.values.update(kwargs)
