@@ -251,7 +251,7 @@ class AlmanacQuery(ESOQueryBase):
         This method is deprecated, Class is now callable, use that instead.
         """
         warnings.warn("The .query() method is deprecated and will be removed "
-                      "in a future release. Please simply call the instance.",
+                      "in v0.7! Please simply call the instance.",
                       DeprecationWarning, stacklevel=2)
         return self()
 
@@ -437,7 +437,7 @@ class SkyModel(ESOQueryBase):
         This method is deprecated, just use the .data attribute instead.
         """
         warnings.warn("The .getdata method is deprecated and will be removed "
-                      "in a future release. Use the identical .data attribute "
+                      "in v0.7!. Use the identical .data attribute "
                       "instead.", DeprecationWarning, stacklevel=2)
         return self.data
 
@@ -520,7 +520,7 @@ class SkyModel(ESOQueryBase):
         This method is deprecated, just call the instance instead.
         """
         warnings.warn("The .call() method is deprecated and will be removed "
-                      "in a future release. Please simply call the instance.",
+                      "in v0.7!. Please simply call the instance.",
                       DeprecationWarning, stacklevel=2)
         self()
 
@@ -532,7 +532,7 @@ class SkyModel(ESOQueryBase):
         This method is deprecated, just call the instance instead.
         """
         warnings.warn("The .callwith(args) method is deprecated and will be "
-                      "removed in a future release. Please simply call the "
+                      "removed in v0.7!. Please simply call the "
                       "instance with optional kwargs instead.",
                       DeprecationWarning, stacklevel=2)
         self(**newparams)
