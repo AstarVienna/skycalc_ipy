@@ -234,6 +234,7 @@ class SkyCalc:
             sp.Empirical1D,
             points=self.table["lam"].data * self.table["lam"].unit,
             lookup_table=self.table["trans"].data,
+            fill_value=0.,
         )
 
         funit = u.Unit("ph s-1 m-2 um-1")
