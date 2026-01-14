@@ -40,7 +40,7 @@ class SkyCalc:
         if ipt_str is None:
             ipt_str = PATH_HERE / "params.yaml"
 
-        params = load_yaml(ipt_str)
+        params = self._load_yaml(ipt_str)
 
         self.defaults = {pp: params[pp][0] for pp in params}
         self.values = {pp: params[pp][0] for pp in params}
@@ -51,6 +51,18 @@ class SkyCalc:
 
         self.last_skycalc_response = None
         self.table = None
+
+    @staticmethod
+    def _load_yaml(ipt_str):
+        # TODO: why not just load, what's all of this?
+        if ".yaml" in str(ipt_str).lower():
+            if not ipt_str.exists():
+                raise ValueError(f"{ipt_str} not found")
+
+            with ipt_str.open("r", encoding="utf-8") as fd:
+                fd = "\n".join(fd.readlines())
+            return yaml.load(fd, Loader=yaml.FullLoader)
+        return yaml.load(ipt_str, Loader=yaml.FullLoader)
 
     def print_comments(self, *param_names):
         """Print descriptions of parameters. Print all if no names given."""
@@ -105,16 +117,29 @@ class SkyCalc:
         mjd=None,
         observatory=None,
         update_values=False,
+        return_full_dict=False,
     ):
         """Query ESO Almanac with given parameters."""
         if date is None and mjd is None:
             raise ValueError("Either date or mjd must be set")
 
-        result = get_almanac_data(
-            ra=ra, dec=dec, date=date, mjd=mjd, observatory=observatory
-        )
+        if date is not None and mjd is not None:
+            warnings.warn("Both date and mjd are set. Using date",
+                          UserWarning, stacklevel=2)
+
+        self.values.update(
+            {"ra": ra, "dec": dec, "date": date, "mjd": mjd})
+        if observatory is not None:
+            self.values["observatory"] = observatory
+        self.validate_params()
+        result = AlmanacQuery(self.values)()
+
         if update_values:
             self.values.update(result)
+
+        if return_full_dict:
+            self.values.update(result)
+            return self.values
 
         return result
 
@@ -280,21 +305,6 @@ class SkyCalc:
         return list(self.defaults.keys())
 
 
-def load_yaml(ipt_str):
-    # TODO: why not just load, what's all of this?
-    if ".yaml" in str(ipt_str).lower():
-        if not ipt_str.exists():
-            raise ValueError(f"{ipt_str} not found")
-
-        with ipt_str.open("r", encoding="utf-8") as fd:
-            fd = "\n".join(fd.readlines())
-        opts_dict = yaml.load(fd, Loader=yaml.FullLoader)
-    else:
-        opts_dict = yaml.load(ipt_str, Loader=yaml.FullLoader)
-
-    return opts_dict
-
-
 def get_almanac_data(
     ra,
     dec,
@@ -303,20 +313,10 @@ def get_almanac_data(
     return_full_dict=False,
     observatory=None,
 ):
-    if date is not None and mjd is not None:
-        warnings.warn("Both date and mjd are set. Using date",
-                      UserWarning, stacklevel=2)
-
-    skycalc_params = SkyCalc()
-    skycalc_params.values.update(
-        {"ra": ra, "dec": dec, "date": date, "mjd": mjd})
-    if observatory is not None:
-        skycalc_params.values["observatory"] = observatory
-    skycalc_params.validate_params()
-    response = AlmanacQuery(skycalc_params.values)()
-
-    if return_full_dict:
-        skycalc_params.values.update(response)
-        return skycalc_params.values
-
-    return response
+    warnings.warn(
+        "'get_almanac_data()' is deprecated as a standalone function and will "
+        "be removed in v0.8. Please use the (almost) identical method of the "
+        "'SkyCalc' class instead.", FutureWarning, stacklevel=2)
+    return SkyCalc().get_almanac_data(ra=ra, dec=dec, date=date, mjd=mjd,
+                                      return_full_dict=return_full_dict,
+                                      observatory=observatory)
