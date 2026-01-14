@@ -252,7 +252,7 @@ class AlmanacQuery(ESOQueryBase):
         """
         warnings.warn("The .query() method is deprecated and will be removed "
                       "in v0.8! Please simply call the instance.",
-                      DeprecationWarning, stacklevel=2)
+                      FutureWarning, stacklevel=2)
         return self()
 
 
@@ -438,7 +438,7 @@ class SkyModel(ESOQueryBase):
         """
         warnings.warn("The .getdata method is deprecated and will be removed "
                       "in v0.8!. Use the identical .data attribute "
-                      "instead.", DeprecationWarning, stacklevel=2)
+                      "instead.", FutureWarning, stacklevel=2)
         return self.data
 
     def _delete_server_tmpdir(self, tmpdir):
@@ -521,7 +521,7 @@ class SkyModel(ESOQueryBase):
         """
         warnings.warn("The .call() method is deprecated and will be removed "
                       "in v0.8!. Please simply call the instance.",
-                      DeprecationWarning, stacklevel=2)
+                      FutureWarning, stacklevel=2)
         self()
 
     def callwith(self, newparams):
@@ -534,7 +534,7 @@ class SkyModel(ESOQueryBase):
         warnings.warn("The .callwith(args) method is deprecated and will be "
                       "removed in v0.8!. Please simply call the "
                       "instance with optional kwargs instead.",
-                      DeprecationWarning, stacklevel=2)
+                      FutureWarning, stacklevel=2)
         self(**newparams)
 
     def printparams(self, keys=None):
