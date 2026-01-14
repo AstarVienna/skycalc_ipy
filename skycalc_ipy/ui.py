@@ -105,16 +105,29 @@ class SkyCalc:
         mjd=None,
         observatory=None,
         update_values=False,
+        return_full_dict=False,
     ):
         """Query ESO Almanac with given parameters."""
         if date is None and mjd is None:
             raise ValueError("Either date or mjd must be set")
 
-        result = get_almanac_data(
-            ra=ra, dec=dec, date=date, mjd=mjd, observatory=observatory
-        )
+        if date is not None and mjd is not None:
+            warnings.warn("Both date and mjd are set. Using date",
+                          UserWarning, stacklevel=2)
+
+        self.values.update(
+            {"ra": ra, "dec": dec, "date": date, "mjd": mjd})
+        if observatory is not None:
+            self.values["observatory"] = observatory
+        self.validate_params()
+        result = AlmanacQuery(self.values)()
+
         if update_values:
             self.values.update(result)
+
+        if return_full_dict:
+            self.values.update(result)
+            return self.values
 
         return result
 
@@ -303,20 +316,10 @@ def get_almanac_data(
     return_full_dict=False,
     observatory=None,
 ):
-    if date is not None and mjd is not None:
-        warnings.warn("Both date and mjd are set. Using date",
-                      UserWarning, stacklevel=2)
-
-    skycalc_params = SkyCalc()
-    skycalc_params.values.update(
-        {"ra": ra, "dec": dec, "date": date, "mjd": mjd})
-    if observatory is not None:
-        skycalc_params.values["observatory"] = observatory
-    skycalc_params.validate_params()
-    response = AlmanacQuery(skycalc_params.values)()
-
-    if return_full_dict:
-        skycalc_params.values.update(response)
-        return skycalc_params.values
-
-    return response
+    warnings.warn(
+        "'get_almanac_data()' is deprecated as a standalone function and will "
+        "be removed in v0.8. Please use the (almost) identical method of the "
+        "'SkyCalc' class instead.", FutureWarning, stacklevel=2)
+    return SkyCalc().get_almanac_data(ra=ra, dec=dec, date=date, mjd=mjd,
+                                      return_full_dict=return_full_dict,
+                                      observatory=observatory)

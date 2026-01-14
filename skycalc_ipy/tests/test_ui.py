@@ -160,68 +160,76 @@ class TestSkyCalcParamsGetAlmanacData:
 
     @pytest.mark.webtest
     def test_return_only_almanac_data_when_update_flag_false(
-            self, skp, basic_almanac_no_update):
+            self, subtests, skp, basic_almanac_no_update):
         skp["observatory"] = "paranal"
         out_dict = basic_almanac_no_update
-        assert out_dict["observatory"] == "lasilla"
-        assert skp["observatory"] == "paranal"
+        with subtests.test(test="output value"):
+            assert out_dict["observatory"] == "lasilla"
+        with subtests.test(test="input value"):
+            assert skp["observatory"] == "paranal"
 
     def test_raise_error_if_both_date_and_mjd_are_empty(self, skp):
         with pytest.raises(ValueError):
             skp.get_almanac_data(180, 0)
 
-
-class TestFunctionGetAlmanacData:
     @pytest.mark.webtest
-    def test_throws_exception_for_invalid_ra(self):
+    def test_throws_exception_for_invalid_ra(self, skp):
         with pytest.raises(ValueError):
-            ui.get_almanac_data(ra=-10, dec=0, mjd=50000)
+            skp.get_almanac_data(ra=-10, dec=0, mjd=50000)
 
     @pytest.mark.webtest
-    def test_throws_exception_for_invalid_dec(self):
+    def test_throws_exception_for_invalid_dec(self, skp):
         with pytest.raises(ValueError):
-            ui.get_almanac_data(ra=180, dec=100, mjd=50000)
+            skp.get_almanac_data(ra=180, dec=100, mjd=50000)
 
-    def test_throws_exception_for_invalid_mjd(self):
+    def test_throws_exception_for_invalid_mjd(self, skp):
         with pytest.raises(ValueError):
-            ui.get_almanac_data(ra=180, dec=0, mjd="s")
+            skp.get_almanac_data(ra=180, dec=0, mjd="s")
 
-    def test_throws_exception_for_invalid_date(self):
+    def test_throws_exception_for_invalid_date(self, skp):
         with pytest.raises(ValueError):
-            ui.get_almanac_data(ra=180, dec=0, date="2000-0-0T0:0:0")
+            skp.get_almanac_data(ra=180, dec=0, date="2000-0-0T0:0:0")
 
     @pytest.mark.webtest
-    def test_return_data_for_valid_parameters(self):
-        out_dict = ui.get_almanac_data(
+    def test_return_data_for_valid_parameters(self, subtests, skp):
+        out_dict = skp.get_almanac_data(
             ra=180, dec=0, date="2000-1-1T0:0:0", observatory="lasilla"
         )
-        assert isinstance(out_dict, Mapping)
-        assert len(out_dict) == 9
-        assert out_dict["observatory"] == "lasilla"
+        with subtests.test(test="correct type"):
+            assert isinstance(out_dict, Mapping)
+        with subtests.test(test="correct len"):
+            assert len(out_dict) == 9
+        with subtests.test(test="correct value"):
+            assert out_dict["observatory"] == "lasilla"
 
     @pytest.mark.webtest
-    def test_return_full_dict_when_flag_true(self):
-        out_dict = ui.get_almanac_data(
+    def test_return_full_dict_when_flag_true(self, subtests, skp):
+        out_dict = skp.get_almanac_data(
             ra=180, dec=0, date="2000-1-1T0:0:0", return_full_dict=True
         )
-        assert isinstance(out_dict, Mapping)
-        assert len(out_dict) == 39
-        assert type(out_dict["moon_sun_sep"]) is float
+        with subtests.test(test="correct type"):
+            assert isinstance(out_dict, Mapping)
+        with subtests.test(test="correct len"):
+            assert len(out_dict) == 39
+        with subtests.test(test="correct value"):
+            assert type(out_dict["moon_sun_sep"]) is float
 
     @pytest.mark.webtest
-    def test_return_only_almanac_dict_when_flag_false(self):
-        out_dict = ui.get_almanac_data(
+    def test_return_only_almanac_dict_when_flag_false(self, subtests, skp):
+        out_dict = skp.get_almanac_data(
             ra=180, dec=0, date="2000-1-1T0:0:0", return_full_dict=False
         )
-        assert isinstance(out_dict, Mapping)
-        assert len(out_dict) == 9
+        with subtests.test(test="correct type"):
+            assert isinstance(out_dict, Mapping)
+        with subtests.test(test="correct len"):
+            assert len(out_dict) == 9
 
     @pytest.mark.webtest
-    def test_take_date_only_if_date_and_mjd_are_valid(self):
-        out_dict_date = ui.get_almanac_data(
+    def test_take_date_only_if_date_and_mjd_are_valid(self, skp):
+        out_dict_date = skp.get_almanac_data(
             ra=180, dec=0, date="2000-1-1T0:0:0")
         with pytest.warns(UserWarning) as record:
-            out_dict_both = ui.get_almanac_data(
+            out_dict_both = skp.get_almanac_data(
                 ra=180, dec=0, mjd=50000, date="2000-1-1T0:0:0"
             )
         assert record[0].message.args[0] == "Both date and mjd are set. Using date"
