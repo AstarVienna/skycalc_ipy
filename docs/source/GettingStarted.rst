@@ -7,15 +7,15 @@ A basic SkyCalc query
 SkyCalc_iPy is very basic. We start by making a :class:`SkyCalc`
 object::
 
-    >>> import skycalc_ipy
-    >>> skycalc = skycalc_ipy.SkyCalc()
+    >>> from skycalc_ipy import SkyCalc
+    >>> skycalc = SkyCalc()
 
 and then call the :meth:`.get_sky_spectrum()` method to get a default data set
 from the ESO SkyCalc server::
 
     >>> tbl = skycalc.get_sky_spectrum()
     >>> print(tbl[:5])
-     lam    trans           flux         
+     lam    trans           flux
       nm      1    ph / (s um arcsec2 m2)
     ------ ------- ----------------------
     300.00 0.03408                 13.145
@@ -220,6 +220,6 @@ In full we have:
 Customs lists of values
 -----------------------
 
-SkyCalc_iPy uses the :mod:`pyyaml` package to parse input. 
+SkyCalc_iPy uses the :mod:`pyyaml` package to parse input.
 
 More coming here
