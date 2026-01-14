@@ -40,7 +40,7 @@ class SkyCalc:
         if ipt_str is None:
             ipt_str = PATH_HERE / "params.yaml"
 
-        params = load_yaml(ipt_str)
+        params = self._load_yaml(ipt_str)
 
         self.defaults = {pp: params[pp][0] for pp in params}
         self.values = {pp: params[pp][0] for pp in params}
@@ -51,6 +51,18 @@ class SkyCalc:
 
         self.last_skycalc_response = None
         self.table = None
+
+    @staticmethod
+    def _load_yaml(ipt_str):
+        # TODO: why not just load, what's all of this?
+        if ".yaml" in str(ipt_str).lower():
+            if not ipt_str.exists():
+                raise ValueError(f"{ipt_str} not found")
+
+            with ipt_str.open("r", encoding="utf-8") as fd:
+                fd = "\n".join(fd.readlines())
+            return yaml.load(fd, Loader=yaml.FullLoader)
+        return yaml.load(ipt_str, Loader=yaml.FullLoader)
 
     def print_comments(self, *param_names):
         """Print descriptions of parameters. Print all if no names given."""
@@ -291,21 +303,6 @@ class SkyCalc:
     @property
     def keys(self):
         return list(self.defaults.keys())
-
-
-def load_yaml(ipt_str):
-    # TODO: why not just load, what's all of this?
-    if ".yaml" in str(ipt_str).lower():
-        if not ipt_str.exists():
-            raise ValueError(f"{ipt_str} not found")
-
-        with ipt_str.open("r", encoding="utf-8") as fd:
-            fd = "\n".join(fd.readlines())
-        opts_dict = yaml.load(fd, Loader=yaml.FullLoader)
-    else:
-        opts_dict = yaml.load(ipt_str, Loader=yaml.FullLoader)
-
-    return opts_dict
 
 
 def get_almanac_data(

@@ -33,12 +33,12 @@ def basic_almanac_no_update(skp):
 
 class TestLoadYaml:
     def test_finds_file_for_specified_path(self):
-        yaml_dict = ui.load_yaml(PATH_HERE.parent / "params.yaml")
-        assert yaml_dict["season"][0] == 0
+        skycalc = ui.SkyCalc(PATH_HERE.parent / "params.yaml")
+        assert skycalc.values["season"] == 0
 
     def test_throws_exception_for_nonexistent_file(self):
         with pytest.raises(ValueError):
-            ui.load_yaml(Path("bogus.yaml"))
+            ui.SkyCalc(Path("bogus.yaml"))
 
     def test_accepts_string_block_input(self):
         str_yaml = """
@@ -46,7 +46,7 @@ class TestLoadYaml:
         - hello
         - world
         """
-        yaml_dict = ui.load_yaml(str_yaml)
+        yaml_dict = ui.SkyCalc._load_yaml(str_yaml)
         assert yaml_dict["params"] == ["hello", "world"]
 
 
