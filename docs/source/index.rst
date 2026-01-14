@@ -79,7 +79,7 @@ from version 0.1.4 onwards. For pre-v0.1.4 changes see below.
 
    - `wmax`: --> `30000  # [nm]`
    - `wgrid_mode`: --> `fixed_spectral_resolution`
-   - `wres`: --> `1000  wave/dwave`
+   - `wres`: --> `1000`  `[wres = wave/dwave]`
 
 .. versionchanged:: 0.1.3
 
