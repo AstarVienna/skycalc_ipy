@@ -34,7 +34,14 @@ logger = get_logger(__name__)
 
 
 class SkyCalc:
-    """Main UI class."""
+    """Main UI class.
+
+    .. versionadded:: PLACEHOLDER_NEXT_RELEASE_VERSION
+
+       Add `.table` attribute. Initially None, set in ``.get_sky_spectrum()``.
+       Subject to change in future versions.
+
+    """
 
     def __init__(self, ipt_str=None):
         if ipt_str is None:
