@@ -333,8 +333,7 @@ class SkyModel(ESOQueryBase):
             # other model components. To obtain the correct absolute flux, an
             # instrumental response curve must be applied to the resulting
             # model spectrum See section 6.2.4 in the documentation
-            # http://localhost/observing/etc/doc/skycalc/
-            # The_Cerro_Paranal_Advanced_Sky_Model.pdf
+            # https://www.eso.org/observing/etc/doc/skycalc/The_Cerro_Paranal_Advanced_Sky_Model.pdf
             # string grid ['Y','N'] flag for inclusion of instrumental thermal
             # radiation
             "incl_therm": "N",
