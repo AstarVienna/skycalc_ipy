@@ -53,7 +53,7 @@ class ESOQueryBase:
     """Base class for queries to ESO skycalc server."""
 
     REQUEST_TIMEOUT = 2  # Time limit (in seconds) for server response
-    BASE_URL = "https://etimecalret-002.eso.org/observing/etc"
+    BASE_URL = "https://www.eso.org/observing/etc"
 
     def __init__(self, url, params):
         self.url = url
@@ -115,7 +115,7 @@ class AlmanacQuery(ESOQueryBase):
         if hasattr(indic, "defaults"):
             indic = indic.values
 
-        super().__init__("/api//skycalc_almanac", {})
+        super().__init__("/bin/script/skycalc_almanac.py", {})
 
         # Left: users keyword (skycalc_cli),
         # Right: skycalc Almanac output keywords
@@ -273,7 +273,7 @@ class SkyModel(ESOQueryBase):
     def __init__(self):
         self.data = None
         self.data_url = "/tmp/"
-        self.deleter_script_url = "/api/rmtmp"
+        self.deleter_script_url = "/bin/script/rmtmp.py"
         self._last_status = ""
         self.tmpdir = ""
         params = {
@@ -362,7 +362,7 @@ class SkyModel(ESOQueryBase):
             "observatory": "paranal",  # paranal
         }
 
-        super().__init__("/api/skycalc", params)
+        super().__init__("/bin/script/skycalc_api.py", params)
 
     def fix_observatory(self):
         """
