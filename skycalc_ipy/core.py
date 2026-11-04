@@ -14,39 +14,51 @@ from os import environ
 from datetime import datetime
 from pathlib import Path
 from collections.abc import Mapping
-from importlib import import_module
 
 import httpx
 
 from astropy.io import fits
 
 from astar_utils import get_logger
+from astar_utils.cache_dir import find_cached_file, get_write_cache_dir
 
-CACHE_DIR_FALLBACK = ".astar/skycalc_ipy"
+PACKAGE_NAME = "skycalc_ipy"
+CACHE_DIR_ENV = "SKYCALC_IPY_CACHE_DIR"
 logger = get_logger(__name__)
 
 
 def get_cache_dir() -> Path:
-    """Establish the cache directory.
+    """Return the directory to write cached server responses into.
 
-    There are three possible locations for the cache directory:
-    1. As set in `os.environ["SKYCALC_IPY_CACHE_DIR"]`
-    2. As set in the `scopesim_data` package.
-    3. The `data` directory in this package.
+    This is the directory set in ``os.environ["SKYCALC_IPY_CACHE_DIR"]``, if
+    given. Otherwise, the location is managed by ``astar_utils.cache_dir``,
+    which is ``~/.astar/skycalc_ipy``, or the ``scopesim_data`` package only
+    in ScopeSim_Data's own CI. The directory is created if necessary.
     """
-    try:
-        dir_cache = Path(environ["SKYCALC_IPY_CACHE_DIR"])
-    except KeyError:
-        try:
-            sim_data = import_module("scopesim_data")
-            dir_cache = Path(getattr(sim_data, "dir_cache_skycalc"))
-        except (ImportError, AttributeError):
-            dir_cache = Path.home() / CACHE_DIR_FALLBACK
+    if env_dir := environ.get(CACHE_DIR_ENV):
+        dir_cache = Path(env_dir)
+        dir_cache.mkdir(parents=True, exist_ok=True)
+        return dir_cache
+    return get_write_cache_dir(PACKAGE_NAME)
 
-    if not dir_cache.is_dir():
-        dir_cache.mkdir(parents=True)
 
-    return dir_cache
+def find_cache_file(filename: str) -> Path:
+    """Return the path to a cached server response.
+
+    If ``os.environ["SKYCALC_IPY_CACHE_DIR"]`` is set, only that directory is
+    searched. Otherwise, the ``scopesim_data`` package (if installed) is
+    searched first, then ``~/.astar/skycalc_ipy``.
+
+    Raises
+    ------
+    FileNotFoundError
+        If the file is not in any cache location, i.e. it must be downloaded.
+    """
+    if env_dir := environ.get(CACHE_DIR_ENV):
+        if (path := Path(env_dir) / filename).is_file():
+            return path
+        raise FileNotFoundError(path)
+    return find_cached_file(Path(filename), PACKAGE_NAME)
 
 
 class ESOQueryBase:
@@ -188,9 +200,12 @@ class AlmanacQuery(ESOQueryBase):
             logger.exception("Wrong %s format for the Almanac.", which)
             raise err
 
-    def _get_jsondata(self, file_path: Path):
-        if file_path.exists():
+    def _get_jsondata(self, cache_name: str):
+        try:
+            file_path = find_cache_file(cache_name)
             return json.load(file_path.open(encoding="utf-8"))
+        except FileNotFoundError:
+            file_path = get_cache_dir() / cache_name
 
         response = self._send_request()
         if not response.text:
@@ -220,10 +235,8 @@ class AlmanacQuery(ESOQueryBase):
             Dictionary with the relevant parameters for the date given
 
         """
-        cache_dir = get_cache_dir()
         cache_name = self.get_cache_filenames("almanacquery", "json")
-        cache_path = cache_dir / cache_name
-        jsondata = self._get_jsondata(cache_path)
+        jsondata = self._get_jsondata(cache_name)
 
         # Find the relevant (key, value)
         almdata = {}
@@ -468,13 +481,13 @@ class SkyModel(ESOQueryBase):
         self._update_params(kwargs)
         self.fix_observatory()
 
-        cache_dir = get_cache_dir()
         cache_name = self.get_cache_filenames("skymodel", "fits")
-        cache_path = cache_dir / cache_name
 
-        if cache_path.exists():
-            self.data = fits.open(cache_path)
+        try:
+            self.data = fits.open(find_cache_file(cache_name))
             return
+        except FileNotFoundError:
+            cache_path = get_cache_dir() / cache_name
 
         response = self._send_request()
 
