@@ -1,10 +1,14 @@
 # -*- coding: utf-8 -*-
 from pathlib import Path
 from collections.abc import Sequence, Mapping
+from unittest.mock import Mock
 
+import numpy as np
 import pytest
 from astropy import table
+from astropy import units as u
 from astropy.io import fits
+from astropy.tests.helper import assert_quantity_allclose
 import synphot as sp
 
 from skycalc_ipy import ui
@@ -29,6 +33,21 @@ def basic_almanac_no_update(skp):
     return skp.get_almanac_data(
         ra=180, dec=0, mjd=50000, observatory="lasilla", update_values=False
     )
+
+
+@pytest.fixture
+def spectrum_model(monkeypatch):
+    """Supply a small FITS spectrum without contacting ESO or using the cache."""
+    spectrum = table.Table({
+        "lam": [0.5, 0.6, 0.7],
+        "trans": [0.8, 0.9, 1.0],
+        "flux": [10.0, 20.0, 30.0],
+    })
+    spectrum.meta["comments"] = ["Synthetic spectrum for unit tests"]
+    with fits.HDUList([fits.PrimaryHDU(), fits.table_to_hdu(spectrum)]) as data:
+        model = Mock(data=data)
+        monkeypatch.setattr(ui, "SkyModel", Mock(return_value=model))
+        yield model
 
 
 class TestLoadYaml:
@@ -145,8 +164,37 @@ class TestSkyCalcParamsGetSkySpectrum:
         assert isinstance(trans, sp.SpectralElement)
         assert isinstance(flux, sp.SourceSpectrum)
 
-    def test_returns_nothing_if_return_type_is_invalid(self):
-        pass
+    def test_raises_for_invalid_return_type(self, skp, spectrum_model):
+        with pytest.raises(ValueError, match="return_type not understood"):
+            skp.get_sky_spectrum(return_type="bogus")
+
+    def test_table_values_units_and_metadata(self, skp, spectrum_model):
+        result = skp.get_sky_spectrum()
+
+        assert result.colnames == ["lam", "trans", "flux"]
+        np.testing.assert_array_equal(result["lam"], [0.5, 0.6, 0.7])
+        np.testing.assert_array_equal(result["trans"], [0.8, 0.9, 1.0])
+        np.testing.assert_array_equal(result["flux"], [10, 20, 30])
+        assert result["lam"].unit == u.um
+        assert result["flux"].unit == u.Unit("ph s-1 m-2 um-1 arcsec-2")
+        assert result.meta["SOURCE"] == "ESO Skycalc utility"
+        assert result.meta["hierarch airmass"][0] == skp["airmass"]
+        assert skp.last_skycalc_response is spectrum_model.data
+        spectrum_model.assert_called_once_with(**skp.values)
+
+    def test_array_values_and_units(self, skp, spectrum_model):
+        wave, trans, flux = skp.get_sky_spectrum(return_type="array")
+
+        assert_quantity_allclose(wave, [0.5, 0.6, 0.7] * u.um)
+        np.testing.assert_array_equal(trans, [0.8, 0.9, 1.0])
+        assert_quantity_allclose(
+            flux, [10, 20, 30] * u.Unit("ph s-1 m-2 um-1 arcsec-2"))
+
+    def test_writes_spectrum_when_filename_given(
+            self, skp, spectrum_model, tmp_path):
+        filename = tmp_path / "spectrum.fits"
+        skp.get_sky_spectrum(filename=filename)
+        spectrum_model.write.assert_called_once_with(filename)
 
 
 class TestSkyCalcParamsGetAlmanacData:

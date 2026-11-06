@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime as dt
+from types import SimpleNamespace
+from unittest.mock import Mock
 
 import pytest
 
@@ -73,3 +75,39 @@ class TestLoadDataFromCache:
 
         alm = core.AlmanacQuery(params)
         _ = alm()
+
+
+class TestAlmanacCoordinates:
+    @pytest.mark.parametrize("coordinate", ["ra", "dec"])
+    def test_missing_coordinate(self, coordinate):
+        params = {"ra": 10, "dec": 20, "mjd": 50000}
+        del params[coordinate]
+        with pytest.raises(KeyError, match=coordinate):
+            core.AlmanacQuery(params)
+
+    @pytest.mark.parametrize("coordinate", ["ra", "dec"])
+    def test_invalid_coordinate(self, coordinate):
+        params = {"ra": 10, "dec": 20, "mjd": 50000, coordinate: "bogus"}
+        with pytest.raises(ValueError):
+            core.AlmanacQuery(params)
+
+
+class TestSkyModelParameters:
+    @pytest.mark.parametrize("name, altitude", [
+        ("lasilla", "2400"),
+        ("paranal", "2640"),
+        ("armazones", "3060"),
+        ("3060m", "3060"),
+        ("5000m", "5000"),
+        ("2640", "2640"),
+    ])
+    def test_observatory_conversion(self, name, altitude):
+        model = core.SkyModel()
+        model["observatory"] = name
+        assert model["observatory"] == altitude
+
+    def test_updates_only_recognized_parameters(self):
+        model = core.SkyModel()
+        model._update_params({"airmass": 2, "unknown_parameter": 42})
+        assert model["airmass"] == 2
+        assert "unknown_parameter" not in model.params
